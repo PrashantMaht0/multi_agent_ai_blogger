@@ -1,73 +1,68 @@
 """
 src/mcp_servers/blogger_server.py
-FastMCP Server exposing Google Blogger publishing tools.
+An MCP server that publishes drafts to Google Blogger via OAuth 2.0.
 """
 
 import os
-from fastmcp import FastMCP
-from google.oauth2 import service_account
+from mcp.server.fastmcp import FastMCP
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
+mcp = FastMCP("Blogger Publisher")
 
-# Initialize the FastMCP server instance
-mcp = FastMCP(name="BloggerServer")
+# If modifying these scopes, delete the file token.json.
+SCOPES = ['https://www.googleapis.com/auth/blogger']
 
 def get_blogger_service():
-    """Initializes and returns the authenticated Blogger v3 API service."""
-    creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    if not creds_path or not os.path.exists(creds_path):
-        raise ValueError("GOOGLE_APPLICATION_CREDENTIALS path is invalid or missing.")
+    """Handles OAuth 2.0 authentication and token generation."""
+    creds = None
     
-    # Required scope for inserting posts
-    scopes = ['https://www.googleapis.com/auth/blogger']
+    # The file token.json stores the user's access and refresh tokens.
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     
-    creds = service_account.Credentials.from_service_account_file(
-        creds_path, scopes=scopes
-    )
-    
-    # Build the API client
+    # If there are no valid credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+            
     return build('blogger', 'v3', credentials=creds)
 
-@mcp.tool
-def publish_to_blogger(title: str, content_html: str, labels: list[str]) -> str:
+@mcp.tool()
+def publish_to_blogger(title: str, content: str, tags: list[str]) -> str:
     """
-    Publishes a formatted HTML blog post to Google Blogger.
-    Returns the live URL of the published post.
+    Publishes a formatted HTML draft to Google Blogger.
+    Returns the live URL of the published post upon success.
     """
-    blog_id = os.getenv("BLOGGER_BLOG_ID")
-    if not blog_id:
-        return "Error: BLOGGER_BLOG_ID environment variable is missing."
-    
     try:
         service = get_blogger_service()
+        blog_id = os.getenv("BLOGGER_BLOG_ID")
         
-        # The Blogger API requires a specific JSON body payload structure
         body = {
-            "kind": "blogger#post",
             "title": title,
-            "content": content_html,
-            "labels": labels
+            "content": content,
+            "labels": tags
         }
         
-        # Execute the insert request
-        request = service.posts().insert(
-            blogId=blog_id, 
-            body=body, 
-            isDraft=False # Set to True if you want it published as a draft first
-        )
-        response = request.execute()
+        posts = service.posts()
+        result = posts.insert(blogId=blog_id, body=body, isDraft=False).execute()
         
-        # The API returns the live URL in the 'url' key of the response dictionary
-        live_url = response.get("url", "URL not found in API response.")
-        return live_url
+        return f"Successfully published to Blogger. Live URL: {result.get('url')}"
         
     except Exception as e:
-        return f"Failed to publish post: {str(e)}"
+        return f"Error publishing to Blogger: {str(e)}"
 
 if __name__ == "__main__":
-    # Runs on stdio for MCP clients to connect
-    mcp.run(transport="stdio")
-    
+    mcp.run()
+    get_blogger_service()
