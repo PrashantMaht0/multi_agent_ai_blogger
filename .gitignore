@@ -1,5 +1,5 @@
 poetry.toml
 pyproject.toml
 temp.txt
-credientials.json
+credentials.json
 .env
