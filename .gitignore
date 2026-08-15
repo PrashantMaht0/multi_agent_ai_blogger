@@ -1,0 +1,5 @@
+poetry.toml
+pyproject.toml
+temp.txt
+credientials.json
+.env
