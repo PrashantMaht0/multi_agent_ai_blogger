@@ -23,3 +23,10 @@ services:
       # Lets the container reach the host's Ollama on Linux; a no-op on Docker Desktop
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+
+networks:
+  default:
+    # Supabase's direct-connection host (db.<ref>.supabase.co) resolves to an AAAA record
+    # only. Docker's default bridge is IPv4-only, so without this the checkpointer fails
+    # with "Network is unreachable" and the dashboard never starts.
+    enable_ipv6: true
