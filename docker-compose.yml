@@ -28,6 +28,12 @@ services:
       # Lets the container reach the host's Ollama on Linux; a no-op on Docker Desktop
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    # Measured at 162 MiB idle - the models run on the host, not in here. The cap keeps a
+    # runaway container from starving Ollama, which needs ~8 GB resident for gemma4:12b.
+    # On a 16 GB machine also shrink the Docker Desktop VM (Settings > Resources) to ~3 GB:
+    # an 8 GB VM plus a loaded model leaves nothing, and the VM's OOM killer takes the
+    # container out with exit code 137.
+    mem_limit: 2g
 
 networks:
   default:
