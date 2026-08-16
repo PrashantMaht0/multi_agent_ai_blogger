@@ -4,7 +4,7 @@ An MCP server that publishes drafts to Google Blogger via OAuth 2.0.
 """
 
 import os
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -64,5 +64,5 @@ def publish_to_blogger(title: str, content: str, tags: list[str]) -> str:
         return f"Error publishing to Blogger: {str(e)}"
 
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(transport="stdio")
     get_blogger_service()

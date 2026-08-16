@@ -3,18 +3,16 @@ src/agents/publisher.py
 Tool-calling agent connecting to the Blogger MCP Server.
 """
 
-import os
 import sys
 import uuid
 import asyncio
-from langchain_ollama import ChatOllama
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver  # <-- Add this import
+from src.prompts import load_prompt
 from src.state import AgentState
 
-model_name = os.getenv("WORKER_MODEL", "llama3:8b")
-llm = ChatOllama(model=model_name, temperature=0.1)
+prompt_spec = load_prompt("publisher")
 
 mcp_config = {
     "blogger_server": {
@@ -25,12 +23,15 @@ mcp_config = {
 }
 
 async def _publish_via_mcp(title: str, draft_html: str) -> str:
+    # Per call, for the same reason as the researcher: an AsyncClient must not outlive
+    # the event loop asyncio.run() created for it.
+    llm = prompt_spec.llm()
     client = MultiServerMCPClient(mcp_config)
     async with client.session("blogger_server") as session:
         tools = await client.get_tools()
-        
-        system_prompt = "You are a Publishing Assistant. Use the 'publish_to_blogger' tool to upload the blog post. Pass the exact HTML content and invent 3 relevant tags. Return ONLY the published URL string."
-        
+
+        system_prompt = prompt_spec.render()
+
         # Override checkpointer inheritance with an isolated MemorySaver
         agent = create_react_agent(
             llm, 

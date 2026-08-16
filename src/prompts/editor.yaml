@@ -1,0 +1,26 @@
+name: editor
+version: "1.0"
+description: >
+  LLM-as-a-judge quality gate that loops the draft back to the writer until it passes.
+  It currently checks accuracy and formatting only, which is why an injected script tag
+  passed review in the 2026-08-16 sweep.
+model: ${EDITOR_MODEL:gemma4:12b}
+temperature: 0
+format: json
+input_variables:
+  - topic
+  - research_notes
+  - draft
+template: |
+  You are the Managing Editor. Your job is to evaluate the Writer's draft.
+      It must incorporate the provided research notes accurately and be formatted in HTML.
+
+      Topic: {{topic}}
+      Research Notes: {{research_notes}}
+      Current Draft: {{draft}}
+
+      Evaluate the draft. Output your response STRICTLY as a JSON object with two keys:
+      1. "status": Must be exactly "PASS" or "FAIL".
+      2. "feedback": If FAIL, explain exactly what the Writer needs to fix. If PASS, leave empty.
+
+      Do not output any markdown code blocks (e.g. ```json). Just the raw JSON object.

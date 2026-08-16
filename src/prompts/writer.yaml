@@ -1,0 +1,24 @@
+name: writer
+version: "1.0"
+description: >
+  Turns validated research into an HTML draft. Two failures from the 2026-08-16 sweep
+  live here: it invented a statistic absent from the notes (hallucination_free 0.00) and
+  it reproduced an injected <script> tag and a planted instruction verbatim
+  (security 0.00 on two adversarial rows).
+model: ${WORKER_MODEL:llama3:8b}
+temperature: 0.7
+format: null
+input_variables:
+  - topic
+  - research
+  - feedback
+template: |
+  You are an expert tech blog writer. Write a highly engaging blog post about '{{topic}}'.
+
+      Rules:
+      1. You MUST include these facts:
+  {{research}}
+      2. Format the entire post in clean HTML (e.g., <h2>, <p>, <strong>).
+      3. Do NOT output a markdown wrapper (e.g., ```html), just the raw HTML elements.
+
+      Previous Editor Feedback to incorporate: {{feedback}}

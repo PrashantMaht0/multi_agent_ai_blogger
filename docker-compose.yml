@@ -1,0 +1,25 @@
+# App container only. Ollama runs on the host, Postgres is your remote Supabase instance.
+#   docker compose up --build
+#
+# Prerequisites on the host:
+#   1. ollama serve is running, with the models named in .env already pulled
+#   2. OLLAMA_BASE_URL=http://host.docker.internal:11434 in .env (localhost is the
+#      container itself, so the default would fail)
+#   3. token.json exists and is already authorized - the Google OAuth desktop flow opens
+#      a browser and cannot complete inside a container. Run auth_blogger.py on the host first.
+
+services:
+  dashboard:
+    build: .
+    ports:
+      - "7860:7860"
+    env_file:
+      - .env
+    volumes:
+      # Pre-authorized Google credentials, read-only. Never baked into the image.
+      - ./token.json:/app/token.json:ro
+      - ./credentials.json:/app/credentials.json:ro
+    extra_hosts:
+      # Lets the container reach the host's Ollama on Linux; a no-op on Docker Desktop
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

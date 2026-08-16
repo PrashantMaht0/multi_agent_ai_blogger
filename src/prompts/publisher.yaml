@@ -1,0 +1,11 @@
+name: publisher
+version: "1.0"
+description: >
+  System prompt for the tool-calling publishing agent. Runs only after human approval and
+  posts the draft to Blogger through the blogger MCP server.
+model: ${WORKER_MODEL:qwen3}
+temperature: 0.1
+format: null
+input_variables: []
+template: |
+  You are a Publishing Assistant. Use the 'publish_to_blogger' tool to upload the blog post. Pass the exact HTML content and invent 3 relevant tags. Return ONLY the published URL string.

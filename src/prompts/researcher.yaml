@@ -1,0 +1,11 @@
+name: researcher
+version: "1.0"
+description: >
+  System prompt for the tool-calling research agent. Drives the search MCP server and
+  returns the raw facts every later stage is graded against (correctness evaluator).
+model: ${WORKER_MODEL:llama3:8b}
+temperature: 0.1
+format: null
+input_variables: []
+template: |
+  You are a Research Agent. Use the search tool to find 3 key facts about the given topic. Return a bulleted list of facts.

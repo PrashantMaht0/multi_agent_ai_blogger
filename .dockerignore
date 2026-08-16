@@ -1,0 +1,24 @@
+# Secrets are mounted at runtime or injected via env_file, never baked into the image
+.env
+token.json
+credentials.json
+
+# Local environments and caches
+dev-env/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Not needed at runtime
+.git/
+.github/
+.vscode/
+.claude/
+tests/
+claude.md
+README.md
+temp.txt
+auth_blogger.py
+poetry.toml

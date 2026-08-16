@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: pipx install poetry==2.4.1
+
+      - name: Cache virtualenv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py313-${{ hashFiles('poetry.lock') }}
+
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install --with dev --no-interaction
+
+      # The suite is hermetic: conftest.py disables dotenv and injects placeholder
+      # values, so no secrets are needed here. A failure fails the build.
+      - name: Run tests
+        run: poetry run python -m pytest tests -v
