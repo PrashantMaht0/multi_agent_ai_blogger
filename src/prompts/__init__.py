@@ -36,6 +36,8 @@ class Prompt:
     model: str
     temperature: float = 0.0
     format: str | None = None
+    num_predict: int | None = None
+    reasoning: bool | None = None
     description: str = ""
     input_variables: list[str] = field(default_factory=list)
 
@@ -56,6 +58,12 @@ class Prompt:
             "model": self.model,
             "temperature": self.temperature,
             "base_url": os.getenv("OLLAMA_BASE_URL"),
+            # Hard ceiling on generation. A judge that should answer in 7 tokens has been
+            # observed running to 2900 tokens of malformed JSON, which then fails to parse.
+            "num_predict": self.num_predict,
+            # gemma4:12b is a thinking model: given a long prompt it spends the whole
+            # generation reasoning and returns empty content. Judges set this to false.
+            "reasoning": self.reasoning,
         }
         if self.format:
             settings["format"] = self.format
@@ -73,6 +81,8 @@ def load_prompt(name: str) -> Prompt:
         model=_resolve_model(data["model"]),
         temperature=data.get("temperature", 0.0),
         format=data.get("format"),
+        num_predict=data.get("num_predict"),
+        reasoning=data.get("reasoning"),
         description=data.get("description", ""),
         input_variables=data.get("input_variables", []),
     )

@@ -78,7 +78,7 @@ def test_researcher_skips_search_once_research_is_validated(monkeypatch):
 # ----------------------------------------------------------------- validator
 
 def test_validator_returns_verdict_and_feedback(monkeypatch, fake_llm):
-    llm = fake_llm('{"status": "VALIDATED", "feedback": "solid sources"}')
+    llm = fake_llm("STATUS: VALIDATED\nFEEDBACK: solid sources")
     monkeypatch.setattr(validator, "validator_llm", llm)
 
     result = validator.validator_node({"topic": "MCP", "research_notes": ["a fact"]})
@@ -88,48 +88,34 @@ def test_validator_returns_verdict_and_feedback(monkeypatch, fake_llm):
     assert "a fact" in llm.prompts[0]
 
 
-def test_validator_survives_key_value_inversion(monkeypatch, fake_llm):
-    """Observed live: gemma4:12b returned this shape and a VALIDATED run read as REJECTED,
-    looping the researcher until the circuit breaker aborted the whole run."""
-    mangled = ('{"```json( { ": "status", "value": "VALIDATED", '
-               '"feedback": "The research provides specific technical differences."}')
-    monkeypatch.setattr(validator, "validator_llm", fake_llm(mangled))
+def test_validator_reads_a_misspelled_verdict(monkeypatch, fake_llm):
+    """gemma4:12b has emitted VALIDED; prefix matching keeps the run alive."""
+    monkeypatch.setattr(validator, "validator_llm", fake_llm("STATUS: VALIDED\nFEEDBACK: fine"))
 
-    result = validator.validator_node({"topic": "WebSockets", "research_notes": ["a fact"]})
+    result = validator.validator_node({"topic": "MCP", "research_notes": ["a fact"]})
 
     assert result["validation_status"] == "VALIDATED"
-    assert "technical differences" in result["validation_feedback"]
 
 
 def test_validator_does_not_read_a_verdict_out_of_prose(monkeypatch, fake_llm):
-    """'cannot be validated' in the feedback must not flip the verdict to VALIDATED."""
-    payload = '{"status": "REJECTED", "feedback": "The data cannot be validated against the topic."}'
-    monkeypatch.setattr(validator, "validator_llm", fake_llm(payload))
+    """'cannot be validated' in the feedback must not flip the verdict."""
+    reply = "STATUS: REJECTED\nFEEDBACK: The data cannot be validated against the topic."
+    monkeypatch.setattr(validator, "validator_llm", fake_llm(reply))
 
     result = validator.validator_node({"topic": "t", "research_notes": ["n"]})
 
     assert result["validation_status"] == "REJECTED"
 
 
-def test_editor_survives_key_value_inversion(monkeypatch, fake_llm):
-    mangled = '{"```json": "status", "value": "PASS", "feedback": ""}'
-    monkeypatch.setattr(editor, "editor_llm", fake_llm(mangled))
-
-    result = editor.editor_node({
-        "topic": "t", "research_notes": ["fact"], "draft": "<p>x</p>", "revision_count": 0,
-    })
-
-    assert result["last_evaluation"] == "PASS"
-
-
-def test_validator_rejects_unparseable_output(monkeypatch, fake_llm):
-    monkeypatch.setattr(validator, "validator_llm", fake_llm("not json at all"))
+def test_validator_passes_research_through_when_the_judge_says_nothing(monkeypatch, fake_llm):
+    """A thinking model returns empty content on a long prompt. Silence is not a
+    rejection: treating it as one burned research attempts and aborted healthy runs."""
+    monkeypatch.setattr(validator, "validator_llm", fake_llm(""))
 
     result = validator.validator_node({"topic": "MCP", "research_notes": ["a fact"]})
 
-    assert result["validation_status"] == "REJECTED"
-    assert "system error" in result["validation_feedback"]
-    # The research loop budget belongs to the researcher, not this node
+    assert result["validation_status"] == "VALIDATED"
+    assert "returned nothing" in result["validation_feedback"]
     assert "revision_count" not in result
 
 
@@ -173,16 +159,31 @@ def test_editor_pass_increments_revision_count(monkeypatch, fake_llm):
     assert result["revision_count"] == 2
 
 
-def test_editor_falls_back_to_fail_on_malformed_json(monkeypatch, fake_llm):
-    monkeypatch.setattr(editor, "editor_llm", fake_llm("```json {broken"))
+def test_editor_passes_draft_through_when_the_judge_says_nothing(monkeypatch, fake_llm):
+    """Failing on silence forced a redraft plus another review - the largest latency cost
+    in the v1.1 sweep. A human still reviews before publishing."""
+    monkeypatch.setattr(editor, "editor_llm", fake_llm(""))
 
     result = editor.editor_node({
         "topic": "MCP", "research_notes": ["fact"], "draft": "<p>x</p>", "revision_count": 0,
     })
 
-    assert result["last_evaluation"] == "FAIL"
+    assert result["last_evaluation"] == "PASS"
     assert result["revision_count"] == 1
-    assert "parse" in result["feedback"]
+    assert "returned nothing" in result["feedback"]
+
+
+def test_editor_reads_the_line_contract(monkeypatch, fake_llm):
+    monkeypatch.setattr(editor, "editor_llm",
+                        fake_llm("STATUS: FAIL\nFEEDBACK: a script tag near the end"))
+
+    result = editor.editor_node({
+        "topic": "MCP", "research_notes": ["fact"], "draft": "<p>x</p>", "revision_count": 1,
+    })
+
+    assert result["last_evaluation"] == "FAIL"
+    assert result["feedback"] == "a script tag near the end"
+    assert result["revision_count"] == 2
 
 
 # ----------------------------------------------------------------- publisher

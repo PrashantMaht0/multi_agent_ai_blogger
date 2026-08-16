@@ -76,9 +76,15 @@ def test_yaml_model_can_pin_a_model_for_an_ab_test(monkeypatch):
     )
 
 
-@pytest.mark.parametrize("name,expected", [("validator", "json"), ("editor", "json"), ("writer", None)])
-def test_structured_output_format_is_declared_in_yaml(name, expected):
-    assert load_prompt(name).format == expected
+@pytest.mark.parametrize("name", ["validator", "editor"])
+def test_judges_disable_thinking_and_cap_output(name):
+    """gemma4:12b spends a long prompt's whole generation reasoning and returns empty
+    content, and its json mode answers with a lone {"thought": ...} object."""
+    prompt = load_prompt(name)
+
+    assert prompt.reasoning is False
+    assert prompt.num_predict
+    assert prompt.format is None
 
 
 def test_each_agent_loads_only_its_own_prompt():

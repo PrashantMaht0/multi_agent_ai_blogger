@@ -1,5 +1,5 @@
 name: validator
-version: "1.2"
+version: "1.3"
 description: >
   Fact-checking gate between research and writing. v1.1 adds the subject-match test: in
   the 2026-08-16 baseline this node returned VALIDATED for research about a generic ML
@@ -8,7 +8,11 @@ description: >
   gemma4:12b emitted "VALIDED" and span the researcher/validator loop.
 model: ${EDITOR_MODEL:gemma4:12b}
 temperature: 0
-format: json
+format: null
+# A verdict plus two sentences. Observed running to 2900 tokens of malformed JSON.
+num_predict: 512
+# Thinking mode leaves content empty on a prompt this long.
+reasoning: false
 input_variables:
   - topic
   - research_notes
@@ -16,6 +20,14 @@ input_variables:
 template: |
   You are a Fact-Checking and Source Verification Agent. You decide whether research is
   good enough to write an article from.
+
+  Reply with exactly two lines and nothing else:
+
+  STATUS: VALIDATED or REJECTED
+  FEEDBACK: one or two sentences naming the failed check and what is missing
+
+  Start your reply with the word STATUS. Write no preamble, no reasoning, no JSON, no
+  markdown.
 
   TOPIC: {{topic}}
 
@@ -39,16 +51,10 @@ template: |
   4. SUFFICIENT - there must be enough substance for an in-depth article.
   5. CONSISTENT - reject data that contradicts itself.
 
-  If the topic names something that does not exist or has not been released and the
-  research confirms that, return REJECTED and say so - it is better to stop than to let
-  an article be written about a subject with no sources.
+  Judge only what the research data says. You do not know today's date and your own sense
+  of what is current is out of date, so never reject research because a year, version or
+  product "has not happened yet" or "is in the future". If the sources report it, treat it
+  as real. Reject for a missing subject only when the research itself says the subject does
+  not exist or could not be found.
 
-  Reply with one JSON object holding exactly these two keys, and nothing else:
-
-  - key "status": its value is one word, either VALIDATED or REJECTED. Spell it in full.
-    Nothing else belongs in this value.
-  - key "feedback": its value is one or two sentences. If REJECTED, name which check
-    failed and what is missing.
-
-  Use those two key names literally. Do not nest them, do not rename them, do not add a
-  key of your own, and do not wrap the reply in markdown fences.
+  Remember: the STATUS line comes first, then the FEEDBACK line. Nothing else.

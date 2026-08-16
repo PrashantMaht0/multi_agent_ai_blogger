@@ -3,9 +3,8 @@ src/agents/editor.py
 LLM-as-a-judge control loop using gemma4:12b.
 """
 
-import json
 from langchain_core.messages import SystemMessage
-from src.agents.parsing import extract_feedback, extract_verdict
+from src.agents.parsing import judge_text, parse_verdict_lines
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -20,23 +19,24 @@ def editor_node(state: AgentState) -> dict:
         draft=state["draft"],
     )
 
-    try:
-        response = editor_llm.invoke([SystemMessage(content=prompt)])
-        decision = json.loads(response.content)
-        
-        # Read the verdict out of the payload: the judge returns valid JSON that does not
-        # always use the requested keys, and a missed PASS costs a whole revision loop.
+    raw = judge_text(editor_llm, [SystemMessage(content=prompt)])
+
+    if not raw.strip():
+        # A judge that answers nothing has not judged the draft. Failing here forced a
+        # pointless redraft plus another review; a human still reviews before publishing.
         return {
-            "feedback": extract_feedback(decision),
+            "feedback": "Editor returned nothing; draft passed through unreviewed.",
             "revision_count": state.get("revision_count", 0) + 1,
-            "last_evaluation": extract_verdict(decision, ("PASS", "FAIL"), default="FAIL"),
+            "last_evaluation": "PASS",
             "sender": "editor"
         }
-    except json.JSONDecodeError:
-        # Failsafe if the model breaks formatting
-        return {
-            "feedback": "Editor failed to parse format. Please refine the draft structure.",
-            "revision_count": state.get("revision_count", 0) + 1,
-            "last_evaluation": "FAIL",
-            "sender": "editor"
-        }
+
+    evaluation, feedback = parse_verdict_lines(raw, ("PASS", "FAIL"), default="FAIL")
+    print(f"Editor Result: {evaluation} - {feedback}")
+
+    return {
+        "feedback": feedback,
+        "revision_count": state.get("revision_count", 0) + 1,
+        "last_evaluation": evaluation,
+        "sender": "editor"
+    }

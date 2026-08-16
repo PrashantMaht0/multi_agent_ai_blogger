@@ -67,7 +67,7 @@ def test_misspelled_verdict_is_normalised_to_validated(monkeypatch):
     import src.agents.validator as validator
 
     class FakeResponse:
-        content = '{"status": "VALIDED", "feedback": "looks good"}'
+        content = "STATUS: VALIDED\nFEEDBACK: looks good"
 
     class FakeLLM:
         def invoke(self, _messages):
@@ -84,7 +84,7 @@ def test_unknown_verdict_is_treated_as_rejection(monkeypatch):
     import src.agents.validator as validator
 
     class FakeResponse:
-        content = '{"status": "MAYBE", "feedback": "unsure"}'
+        content = "STATUS: MAYBE\nFEEDBACK: unsure"
 
     class FakeLLM:
         def invoke(self, _messages):

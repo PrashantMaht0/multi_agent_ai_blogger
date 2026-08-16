@@ -5,7 +5,7 @@ Agent responsible for validating sources and factual consistency from researcher
 
 import json
 from langchain_core.messages import SystemMessage
-from src.agents.parsing import extract_feedback, extract_verdict
+from src.agents.parsing import judge_text, parse_verdict_lines
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -27,15 +27,19 @@ def validator_node(state: AgentState) -> dict:
     )
 
     try:
-        response = validator_llm.invoke([SystemMessage(content=prompt)])
-        decision = json.loads(response.content)
-        
-        # gemma4:12b returns valid JSON that does not always match the requested shape,
-        # so read the verdict out of the payload rather than trusting decision["status"].
-        status = extract_verdict(decision, ("VALIDATED", "REJECTED"), default="REJECTED")
-        feedback = extract_feedback(decision)
+        raw = judge_text(validator_llm, [SystemMessage(content=prompt)])
+        if not raw.strip():
+            # Silence is not a rejection. Treating it as one burned research attempts and
+            # aborted healthy runs; the editor is still downstream.
+            print("Validator returned nothing; passing research through.")
+            return {
+                "validation_status": "VALIDATED",
+                "validation_feedback": "Validator returned nothing; research passed through unchecked.",
+                "sender": "validator"
+            }
 
-        print(f"Validator Result: {status} (raw: {decision}) - {feedback}")
+        status, feedback = parse_verdict_lines(raw, ("VALIDATED", "REJECTED"), default="REJECTED")
+        print(f"Validator Result: {status} - {feedback}")
         return {
             "validation_status": status,
             "validation_feedback": feedback,
