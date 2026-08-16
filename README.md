@@ -142,7 +142,7 @@ clicked.
 
 **The published post**, live on Blogger after approval.
 
-![Published blog post](assest/screen_shots/Final_blog_with_v1.png)
+[![Published blog post](assest/screen_shots/Final_blog_with_v1.png)](https://prax-pins-gg.blogspot.com/2026/08/everything-new-in-googles-new-pixel-11.html)
 
 ## Evals Configs
 
