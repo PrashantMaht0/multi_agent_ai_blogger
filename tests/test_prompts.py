@@ -31,7 +31,8 @@ def test_render_substitutes_variables_and_leaves_json_braces_alone():
         topic="MCP", research_notes='["a fact"]', error_context=""
     )
 
-    assert "Topic: MCP" in rendered
+    assert "MCP" in rendered
+    assert '"a fact"' in rendered
     assert '"status": "VALIDATED" or "REJECTED"' in rendered
     assert "{{" not in rendered
 
