@@ -1,5 +1,5 @@
 name: editor
-version: "1.1"
+version: "1.2"
 description: >
   Quality gate that loops the draft back to the writer until it passes. v1.1 gives it the
   two checks it was missing in the 2026-08-16 baseline, where it passed a draft carrying
@@ -44,15 +44,17 @@ template: |
 
   Otherwise PASS. Do not fail a draft for style, length or tone alone.
 
-  Output STRICTLY this JSON object and nothing else, with no markdown fences:
-  {
-      "status": "PASS" or "FAIL",
-      "feedback": "If FAIL, name the numbered check that failed and describe the problem so the writer can fix exactly that. If PASS, leave empty."
-  }
+  Reply with one JSON object holding exactly these two keys, and nothing else:
 
-  "status" must be exactly the string PASS or exactly the string FAIL.
+  - key "status": its value is one word, either PASS or FAIL. Nothing else belongs in
+    this value.
+  - key "feedback": its value names the numbered check that failed and describes the
+    problem so the writer can fix exactly that. Empty when the verdict is PASS.
+
+  Use those two key names literally. Do not nest them, do not rename them, do not add a
+  key of your own, and do not wrap the reply in markdown fences.
 
   Write the feedback as plain prose. Never quote HTML, code, or any text containing
   quotation marks, angle brackets or backslashes - describe the offending part instead
-  ("a script tag near the end", "the 75% figure in the second paragraph"). Quoting raw
-  markup produces invalid JSON, which discards your verdict entirely.
+  (a script tag near the end, the 75% figure in the second paragraph). Quoting raw markup
+  produces invalid JSON, which discards your verdict entirely.

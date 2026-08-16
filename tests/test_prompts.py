@@ -6,7 +6,7 @@ Guards the decoupled prompt directory. No LLM calls.
 import pytest
 import yaml
 
-from src.prompts import PROMPTS_DIR, _resolve_model, load_prompt
+from src.prompts import PROMPTS_DIR, Prompt, _resolve_model, load_prompt
 
 AGENTS = ["researcher", "validator", "writer", "editor", "publisher"]
 
@@ -27,14 +27,29 @@ def test_prompt_declares_what_the_eval_workflow_needs(name):
 
 
 def test_render_substitutes_variables_and_leaves_json_braces_alone():
-    rendered = load_prompt("validator").render(
-        topic="MCP", research_notes='["a fact"]', error_context=""
+    """Mustache is used precisely so literal JSON in a prompt needs no escaping."""
+    prompt = Prompt(
+        name="t", version="0", model="m",
+        template='Topic: {{topic}}\nReply as {"status": "PASS", "feedback": ""}',
     )
 
-    assert "MCP" in rendered
-    assert '"a fact"' in rendered
-    assert '"status": "VALIDATED" or "REJECTED"' in rendered
+    rendered = prompt.render(topic="MCP")
+
+    assert "Topic: MCP" in rendered
+    assert '{"status": "PASS", "feedback": ""}' in rendered
     assert "{{" not in rendered
+
+
+def test_agent_prompts_render_with_their_declared_variables():
+    filled = {
+        "validator": {"topic": "MCP", "research_notes": '["a fact"]', "error_context": ""},
+        "writer": {"topic": "MCP", "research": "- a fact", "feedback": "none"},
+        "editor": {"topic": "MCP", "research_notes": "- a fact", "draft": "<p>x</p>"},
+    }
+    for name, values in filled.items():
+        rendered = load_prompt(name).render(**values)
+        assert "MCP" in rendered
+        assert "{{" not in rendered
 
 
 def test_render_refuses_to_silently_drop_a_variable():

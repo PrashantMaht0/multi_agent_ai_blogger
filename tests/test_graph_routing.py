@@ -3,7 +3,12 @@ tests/test_graph_routing.py
 Pure routing/state tests. No LLM calls, no network, no .env required.
 """
 
-from src.orchestrator.graph import validation_router, editor_router, abort_node
+from src.orchestrator.graph import (
+    MAX_RESEARCH_ATTEMPTS,
+    abort_node,
+    editor_router,
+    validation_router,
+)
 
 
 def test_validated_research_goes_to_writer():
@@ -19,10 +24,17 @@ def test_exhausted_research_aborts_instead_of_drafting():
     """Regression: the breaker used to bypass to the writer, feeding it error text."""
     state = {
         "validation_status": "REJECTED",
-        "research_attempts": 3,
+        "research_attempts": MAX_RESEARCH_ATTEMPTS,
         "research_error": "unhandled errors in a TaskGroup",
     }
     assert validation_router(state) == "abort"
+
+
+def test_research_budget_allows_one_retry_then_stops():
+    """Two passes: the first rejection re-searches, the second gives up."""
+    assert MAX_RESEARCH_ATTEMPTS == 2
+    assert validation_router({"validation_status": "REJECTED", "research_attempts": 1}) == "researcher"
+    assert validation_router({"validation_status": "REJECTED", "research_attempts": 2}) == "abort"
 
 
 def test_editor_budget_is_separate_from_research_budget():

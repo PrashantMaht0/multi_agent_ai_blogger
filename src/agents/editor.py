@@ -5,6 +5,7 @@ LLM-as-a-judge control loop using gemma4:12b.
 
 import json
 from langchain_core.messages import SystemMessage
+from src.agents.parsing import extract_feedback, extract_verdict
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -23,10 +24,12 @@ def editor_node(state: AgentState) -> dict:
         response = editor_llm.invoke([SystemMessage(content=prompt)])
         decision = json.loads(response.content)
         
+        # Read the verdict out of the payload: the judge returns valid JSON that does not
+        # always use the requested keys, and a missed PASS costs a whole revision loop.
         return {
-            "feedback": decision.get("feedback", ""),
+            "feedback": extract_feedback(decision),
             "revision_count": state.get("revision_count", 0) + 1,
-            "last_evaluation": decision.get("status", "FAIL"),
+            "last_evaluation": extract_verdict(decision, ("PASS", "FAIL"), default="FAIL"),
             "sender": "editor"
         }
     except json.JSONDecodeError:

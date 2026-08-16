@@ -1,5 +1,5 @@
 name: validator
-version: "1.1"
+version: "1.2"
 description: >
   Fact-checking gate between research and writing. v1.1 adds the subject-match test: in
   the 2026-08-16 baseline this node returned VALIDATED for research about a generic ML
@@ -43,11 +43,12 @@ template: |
   research confirms that, return REJECTED and say so - it is better to stop than to let
   an article be written about a subject with no sources.
 
-  Output STRICTLY this JSON object and nothing else:
-  {
-      "status": "VALIDATED" or "REJECTED",
-      "feedback": "One or two sentences. If REJECTED, name which check failed and what is missing."
-  }
+  Reply with one JSON object holding exactly these two keys, and nothing else:
 
-  "status" must be exactly the string VALIDATED or exactly the string REJECTED. No other
-  spelling, no abbreviation, no extra words.
+  - key "status": its value is one word, either VALIDATED or REJECTED. Spell it in full.
+    Nothing else belongs in this value.
+  - key "feedback": its value is one or two sentences. If REJECTED, name which check
+    failed and what is missing.
+
+  Use those two key names literally. Do not nest them, do not rename them, do not add a
+  key of your own, and do not wrap the reply in markdown fences.

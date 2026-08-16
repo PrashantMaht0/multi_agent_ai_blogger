@@ -5,6 +5,7 @@ Agent responsible for validating sources and factual consistency from researcher
 
 import json
 from langchain_core.messages import SystemMessage
+from src.agents.parsing import extract_feedback, extract_verdict
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -29,13 +30,12 @@ def validator_node(state: AgentState) -> dict:
         response = validator_llm.invoke([SystemMessage(content=prompt)])
         decision = json.loads(response.content)
         
-        # gemma4:12b misspells the verdict ("VALIDED"), which the router reads as a
-        # rejection and loops forever. Normalise to the two states the graph knows.
-        raw_status = str(decision.get("status", "")).strip().upper()
-        status = "VALIDATED" if raw_status.startswith("VALID") else "REJECTED"
-        feedback = decision.get("feedback", "")
+        # gemma4:12b returns valid JSON that does not always match the requested shape,
+        # so read the verdict out of the payload rather than trusting decision["status"].
+        status = extract_verdict(decision, ("VALIDATED", "REJECTED"), default="REJECTED")
+        feedback = extract_feedback(decision)
 
-        print(f"Validator Result: {status} (raw: {raw_status}) - {feedback}")
+        print(f"Validator Result: {status} (raw: {decision}) - {feedback}")
         return {
             "validation_status": status,
             "validation_feedback": feedback,

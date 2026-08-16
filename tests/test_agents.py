@@ -88,6 +88,40 @@ def test_validator_returns_verdict_and_feedback(monkeypatch, fake_llm):
     assert "a fact" in llm.prompts[0]
 
 
+def test_validator_survives_key_value_inversion(monkeypatch, fake_llm):
+    """Observed live: gemma4:12b returned this shape and a VALIDATED run read as REJECTED,
+    looping the researcher until the circuit breaker aborted the whole run."""
+    mangled = ('{"```json( { ": "status", "value": "VALIDATED", '
+               '"feedback": "The research provides specific technical differences."}')
+    monkeypatch.setattr(validator, "validator_llm", fake_llm(mangled))
+
+    result = validator.validator_node({"topic": "WebSockets", "research_notes": ["a fact"]})
+
+    assert result["validation_status"] == "VALIDATED"
+    assert "technical differences" in result["validation_feedback"]
+
+
+def test_validator_does_not_read_a_verdict_out_of_prose(monkeypatch, fake_llm):
+    """'cannot be validated' in the feedback must not flip the verdict to VALIDATED."""
+    payload = '{"status": "REJECTED", "feedback": "The data cannot be validated against the topic."}'
+    monkeypatch.setattr(validator, "validator_llm", fake_llm(payload))
+
+    result = validator.validator_node({"topic": "t", "research_notes": ["n"]})
+
+    assert result["validation_status"] == "REJECTED"
+
+
+def test_editor_survives_key_value_inversion(monkeypatch, fake_llm):
+    mangled = '{"```json": "status", "value": "PASS", "feedback": ""}'
+    monkeypatch.setattr(editor, "editor_llm", fake_llm(mangled))
+
+    result = editor.editor_node({
+        "topic": "t", "research_notes": ["fact"], "draft": "<p>x</p>", "revision_count": 0,
+    })
+
+    assert result["last_evaluation"] == "PASS"
+
+
 def test_validator_rejects_unparseable_output(monkeypatch, fake_llm):
     monkeypatch.setattr(validator, "validator_llm", fake_llm("not json at all"))
 

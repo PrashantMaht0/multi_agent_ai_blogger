@@ -16,7 +16,9 @@ from src.agents.writer import writer_node
 from src.agents.publisher import publisher_node
 
 
-MAX_RESEARCH_ATTEMPTS = 3
+# Two passes. A third search on a topic the first two could not find rarely returns
+# anything new, and it spends a Tavily credit per attempt on an already-failing row.
+MAX_RESEARCH_ATTEMPTS = 2
 
 
 def validation_router(state: AgentState):
