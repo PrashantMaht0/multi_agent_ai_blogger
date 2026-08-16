@@ -25,6 +25,24 @@ def test_researcher_stores_findings_and_burns_an_attempt(monkeypatch):
     assert result["research_attempts"] == 1
 
 
+def test_researcher_reports_the_root_cause_not_the_taskgroup_wrapper(monkeypatch):
+    """anyio's ExceptionGroup always stringifies to the same useless sentence."""
+    def boom(_coro):
+        raise ExceptionGroup(
+            "unhandled errors in a TaskGroup",
+            [ExceptionGroup("unhandled errors in a TaskGroup",
+                            [ConnectionError("nodename nor servname provided")])],
+        )
+
+    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic: topic)
+    monkeypatch.setattr(researcher.asyncio, "run", boom)
+
+    result = researcher.researcher_node({"topic": "MCP", "research_notes": []})
+
+    assert result["research_error"] == "ConnectionError: nodename nor servname provided"
+    assert "TaskGroup" not in result["research_error"]
+
+
 def test_researcher_keeps_failures_out_of_research_notes(monkeypatch):
     """Regression: the error string used to be appended as if it were research."""
     def boom(_coro):

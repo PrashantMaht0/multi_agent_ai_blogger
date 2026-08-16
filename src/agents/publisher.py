@@ -9,6 +9,7 @@ import asyncio
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver  # <-- Add this import
+from src.agents.errors import root_cause
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -57,5 +58,5 @@ def publisher_node(state: AgentState) -> dict:
         live_url = asyncio.run(_publish_via_mcp(topic, final_draft))
         return {"blogger_url": live_url, "sender": "publisher"}
     except Exception as e:
-        print(f"Error calling Publisher MCP Tool: {e}")
+        print(f"Error calling Publisher MCP Tool: {root_cause(e)}")
         return {"blogger_url": "Failed to publish.", "sender": "publisher"}

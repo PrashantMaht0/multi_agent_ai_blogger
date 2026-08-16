@@ -10,6 +10,7 @@ import traceback
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver  # <-- Add this import
+from src.agents.errors import root_cause
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -72,11 +73,12 @@ def researcher_node(state: AgentState) -> dict:
             print("\n" + "="*50)
             print("🚨 MCP SERVER FAILURE TRACEBACK:")
             traceback.print_exc()
+            print(f"ROOT CAUSE: {root_cause(e)}")
             print("="*50 + "\n")
             # Errors stay out of research_notes so they can never be treated as research data
             return {
                 "research_notes": [],
-                "research_error": str(e),
+                "research_error": root_cause(e),
                 "research_attempts": attempts + 1,
                 "sender": "researcher"
             }

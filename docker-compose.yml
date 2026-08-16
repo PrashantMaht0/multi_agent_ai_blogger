@@ -15,6 +15,11 @@ services:
       - "7860:7860"
     env_file:
       - .env
+    environment:
+      # Overrides whatever .env says. Inside a container "localhost" is the container
+      # itself, but that same value is what a host-side `python app.py` needs - so .env
+      # keeps localhost and the override lives here. Do not move this back into .env.
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
     volumes:
       # Pre-authorized Google credentials, read-only. Never baked into the image.
       - ./token.json:/app/token.json:ro
