@@ -132,17 +132,17 @@ swapping is the slowest part of a run.
 **The dashboard while a workflow is running.** The live trace on the left shows which agent
 has finished and what it produced. The Stop button is active while the run is in progress.
 
-![Dashboard running a workflow](assest/screen_shots/Dashboard.png)
+![Dashboard running a workflow](https://github.com/PrashantMaht0/multi_agent_ai_blogger/blob/main/assest/screen_shots/Dashboard.png)
 
 **Waiting for human approval.** The editor has passed the draft, the workflow has paused,
 and the finished HTML is shown for review. Nothing is published until Approve & Publish is
 clicked.
 
-![Draft paused for human review](assest/screen_shots/Blog_human_review.png)
+![Draft paused for human review](https://github.com/PrashantMaht0/multi_agent_ai_blogger/blob/main/assest/screen_shots/Blog_human_review.png)
 
 **The published post**, live on Blogger after approval.
 
-[![Published blog post](assest/screen_shots/Final_blog_with_v1.png)](https://prax-pins-gg.blogspot.com/2026/08/everything-new-in-googles-new-pixel-11.html)
+[![Published blog post](https://github.com/PrashantMaht0/multi_agent_ai_blogger/blob/main/assest/screen_shots/Final_blog_with_v1.png)](https://prax-pins-gg.blogspot.com/2026/08/everything-new-in-googles-new-pixel-11.html)
 
 ## Evals Configs
 
