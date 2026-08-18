@@ -1,5 +1,5 @@
 name: writer
-version: "2.1"
+version: "2.2"
 description: >
   Turns validated research into an HTML draft. v2.0 targets the two weakest metrics in the
   b6373194 sweep: engagement 0.18 and catchy_headline 0.62. The judges were consistent
@@ -14,8 +14,6 @@ description: >
   a deliberately formulaic draft 0.0, and returns identical scores 5/5 on a fixed draft.
   The variance is in what a small local model produces run to run, which is the trade the
   project accepts in order to stay runnable on ordinary hardware.
-# Pinned, not ${WORKER_MODEL}: on the same v2.1 prompt qwen3 scored engagement 0.50
-# against llama3.1:8b's 0.30, with both at headline 1.00.
 model: qwen3
 temperature: 0.85
 repeat_penalty: 1.25
@@ -41,9 +39,14 @@ template: |
   FOUR RULES THAT DECIDE WHETHER THIS IS ANY GOOD
 
   1. Open with a concrete moment, not a definition.
-     Weak openings state what something is. Strong ones show a moment where it matters:
-     a task that fails, a cost, a number from the notes, a question with a real answer.
-     Write your own opening about this topic - never reuse wording from these instructions.
+     Weak openings state what something is. Strong ones show why it matters: the task that
+     fails without it, the limit it removes, a figure from the notes, a question with a
+     real answer.
+     Never invent a person, company, place, project, price or case study to open with.
+     "A developer in Berlin found that..." and "a warehouse project costing $150K" are
+     fabrications even when they read well. Build the hook from the notes, or from a
+     situation any reader recognises, with no invented specifics.
+     Write your own opening - never reuse wording from these instructions.
      Never start with "In today's world", "As AI systems grow", "X has evolved
      significantly", or "X is a powerful technique that". Define the subject in the second
      or third sentence, after the reader has a reason to care.
@@ -65,7 +68,8 @@ template: |
   "How OAuth Keeps Your Password Out of Someone Else's App" beats "Understanding OAuth 2.0".
 
   FACTS
-  Every number, date, name, company, version or quote must come from the research notes.
+  Every number, date, name, company, person, place, price, version or quote must come from
+  the research notes. An invented example is a factual error, not colour.
   Where the notes have no figure, describe the effect in words rather than inventing one.
   Thin notes mean a shorter post, never padding. If the notes are about a different subject
   than the topic names, write what the notes support and say so plainly.
