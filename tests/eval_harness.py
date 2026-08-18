@@ -23,11 +23,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dotenv import load_dotenv
-from langchain_core.messages import SystemMessage
 
 load_dotenv()
 
-from src.agents.parsing import message_text
+from src.agents.parsing import judge_messages, message_text
 from src.orchestrator.graph import build_graph
 
 DATASET_PATH = Path(__file__).parent / "dataset.json"
@@ -115,7 +114,7 @@ def _ask_judge(prompt: str) -> dict | str:
     """Returns the judge's parsed JSON, or an error string if it could not be read."""
     raw = ""
     try:
-        raw = message_text(_judge_llm().invoke([SystemMessage(content=prompt)])).strip()
+        raw = message_text(_judge_llm().invoke(judge_messages(prompt))).strip()
         if raw.startswith("```"):
             raw = raw.split("```")[1].removeprefix("json").strip()
         return json.loads(raw)

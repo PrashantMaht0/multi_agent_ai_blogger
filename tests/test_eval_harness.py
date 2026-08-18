@@ -177,3 +177,15 @@ def test_missing_metric_is_unscored_rather_than_zero(monkeypatch):
 
     assert scores["structure"] == 1
     assert scores["skimmability"] is None
+
+
+def test_harness_sends_a_user_turn_to_the_judge():
+    """Regression: the harness sent a system-only message list and every Gemini judge
+    call failed with 'contents are required', scoring the whole sweep as unevaluated."""
+    import inspect
+
+    from langchain_core.messages import HumanMessage
+
+    source = inspect.getsource(harness._ask_judge)
+    assert "judge_messages" in source, "judge prompts must go through judge_messages()"
+    assert any(isinstance(m, HumanMessage) for m in harness.judge_messages("x"))

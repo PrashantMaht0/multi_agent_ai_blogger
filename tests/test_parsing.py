@@ -57,3 +57,16 @@ def test_empty_reply_uses_the_default(raw):
 
     assert verdict == "REJECTED"
     assert feedback == ""
+
+
+def test_judge_messages_include_a_user_turn():
+    """Gemini rejects a system-only request with 'ValueError: contents are required',
+    which silently turned every judge call into a failure."""
+    from langchain_core.messages import HumanMessage, SystemMessage
+
+    from src.agents.parsing import judge_messages
+
+    messages = judge_messages("grade this")
+
+    assert isinstance(messages[0], SystemMessage)
+    assert any(isinstance(m, HumanMessage) for m in messages), "Gemini needs a user turn"
