@@ -7,7 +7,16 @@ description: >
   "repetitive phrasing", and headlines that "read like an academic paper title" or open
   with Understanding. Temperature raised from 0.7 to 0.85 for more varied phrasing;
   grounding rules are unchanged because hallucination_free was already 1.00.
-model: ${WORKER_MODEL:qwen3}
+
+  Engagement is an accepted limitation. Six configurations were measured - v2.0, v2.1,
+  repeat_penalty 1.25, a 350-500 word cap, and the same prompt on qwen3 and on Gemini -
+  and none reached 0.8. The judge is not at fault: it scores a hand-written reference 1.0,
+  a deliberately formulaic draft 0.0, and returns identical scores 5/5 on a fixed draft.
+  The variance is in what a small local model produces run to run, which is the trade the
+  project accepts in order to stay runnable on ordinary hardware.
+# Pinned, not ${WORKER_MODEL}: on the same v2.1 prompt qwen3 scored engagement 0.50
+# against llama3.1:8b's 0.30, with both at headline 1.00.
+model: qwen3
 temperature: 0.85
 repeat_penalty: 1.25
 format: null
