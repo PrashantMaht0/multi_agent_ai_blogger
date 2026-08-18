@@ -35,3 +35,4 @@ env/
 claude.md
 .claude
 error_runs.jsonl
+poetry.lock

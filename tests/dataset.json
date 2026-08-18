@@ -3,126 +3,126 @@
     "topic": "What is the Model Context Protocol (MCP)?",
     "category": "normal",
     "expected_points": [
-      "MCP is an open standard for connecting AI applications to external tools and data",
-      "It defines a client/server architecture over transports such as stdio",
-      "It was introduced by Anthropic"
+      "MCP is an open standard for connecting AI applications to external tools and data sources",
+      "It uses a client/server design where servers expose tools a model can call",
+      "It was created by Anthropic"
     ]
   },
   {
     "topic": "How does retrieval-augmented generation (RAG) work?",
     "category": "normal",
     "expected_points": [
-      "A retriever fetches relevant documents from a vector store",
-      "Retrieved context is injected into the prompt before generation",
-      "It reduces hallucination by grounding answers in source documents"
+      "Relevant documents are retrieved from a store, usually by embedding similarity",
+      "The retrieved text is added to the prompt before the model generates its answer",
+      "Grounding answers in retrieved sources reduces hallucination"
     ]
   },
   {
     "topic": "What is LangGraph and how does it differ from LangChain?",
     "category": "normal",
     "expected_points": [
-      "LangGraph models agent workflows as a stateful graph of nodes and edges",
-      "It supports cycles, checkpointing and human-in-the-loop interrupts",
-      "LangChain focuses on composing chains rather than durable stateful graphs"
+      "LangGraph models an agent workflow as a graph of nodes sharing state",
+      "It supports loops, persistence and pausing for human input",
+      "It targets stateful, long-running workflows rather than simple linear chains"
     ]
   },
   {
     "topic": "Why did DRAM prices rise sharply in 2026?",
     "category": "normal",
     "expected_points": [
-      "AI and data centre demand pulled manufacturing capacity away from consumer memory",
-      "Supply chain constraints and tariffs raised component costs",
-      "Consumer RAM became scarce, pushing prices up sharply"
+      "Demand from AI and data centres pulled manufacturing capacity away from consumer memory",
+      "Manufacturers prioritised higher-margin products, constraining supply",
+      "Consumer memory prices rose sharply as a result"
     ]
   },
   {
     "topic": "What are vector databases used for?",
     "category": "normal",
     "expected_points": [
-      "They store embeddings and support approximate nearest-neighbour search",
-      "They power semantic search and RAG pipelines",
-      "Examples include pgvector, Pinecone, Weaviate and Qdrant"
+      "They store vector embeddings of text or other data",
+      "They find similar items by nearest-neighbour search rather than exact matching",
+      "They are commonly used for semantic search and RAG"
     ]
   },
   {
     "topic": "What is quantization in large language models?",
     "category": "normal",
     "expected_points": [
-      "Weights are stored at lower numeric precision such as int8 or int4",
-      "It reduces memory footprint and speeds up inference",
-      "It trades some accuracy for efficiency"
+      "Model weights are stored at lower numeric precision than the original format",
+      "This cuts memory use and can speed up inference",
+      "Some accuracy is traded away for the efficiency gain"
     ]
   },
   {
     "topic": "How does Ollama run large language models locally?",
     "category": "normal",
     "expected_points": [
-      "It serves models locally over an HTTP API, by default on port 11434",
-      "Models are pulled and stored on the local machine",
-      "Inference runs on local hardware, so no data leaves the machine"
+      "Ollama runs language models on your own machine instead of in the cloud",
+      "Models are downloaded and stored locally, then served through a local API",
+      "Because inference happens locally, your data stays on the machine"
     ]
   },
   {
     "topic": "What is OAuth 2.0 and how does the authorization code flow work?",
     "category": "normal",
     "expected_points": [
-      "The client redirects the user to an authorization server to obtain consent",
-      "An authorization code is exchanged for an access token",
-      "Refresh tokens allow new access tokens without re-prompting the user"
+      "The user is redirected to an authorization server to approve access",
+      "The client receives a short-lived authorization code and exchanges it for an access token",
+      "The client calls the API with that token rather than the user's password"
     ]
   },
   {
     "topic": "What are the trade-offs of multi-agent versus single-agent LLM systems?",
     "category": "normal",
     "expected_points": [
-      "Multi-agent systems allow specialisation and separation of concerns",
-      "They add orchestration complexity, latency and cost",
-      "Single agents are simpler but harder to control for long workflows"
+      "Splitting work across specialised agents lets each focus on one job",
+      "Coordinating them adds complexity, latency and cost",
+      "A single agent is simpler but harder to steer over a long task"
     ]
   },
   {
     "topic": "How does PostgreSQL implement MVCC?",
     "category": "normal",
     "expected_points": [
-      "Each row version carries transaction visibility metadata",
-      "Readers do not block writers and writers do not block readers",
-      "Dead tuples are reclaimed by VACUUM"
+      "Each transaction sees a snapshot of the data, with multiple row versions kept",
+      "Readers and writers do not block each other",
+      "Obsolete row versions have to be cleaned up afterwards"
     ]
   },
   {
     "topic": "What is LLM-as-a-judge evaluation?",
     "category": "normal",
     "expected_points": [
-      "A language model scores outputs against a rubric instead of exact matching",
-      "It suits open-ended generation where string comparison fails",
-      "Judge bias and inconsistency are known limitations"
+      "A model scores or compares outputs against a rubric instead of exact string matching",
+      "It suits open-ended tasks where there is no single correct answer",
+      "Judges can be biased or inconsistent, so the scores need care"
     ]
   },
   {
     "topic": "What does a checkpointer do in a stateful agent workflow?",
     "category": "normal",
     "expected_points": [
-      "It persists graph state after each step so a run can be resumed",
-      "It enables pausing for human review and later continuation",
-      "State is keyed by a thread identifier"
+      "It saves the workflow's state as the run progresses",
+      "A saved run can be resumed later, including after pausing for human input",
+      "State is stored per run so separate runs do not mix"
     ]
   },
   {
     "topic": "What is the difference between fine-tuning and prompt engineering?",
     "category": "normal",
     "expected_points": [
-      "Fine-tuning updates model weights on task-specific data",
-      "Prompt engineering changes only the input, leaving weights untouched",
-      "Fine-tuning costs more but can encode behaviour prompts cannot"
+      "Fine-tuning changes the model's weights by training it on task data",
+      "Prompt engineering changes only the input and leaves the model unchanged",
+      "Fine-tuning costs more and needs data, while prompting is faster to iterate on"
     ]
   },
   {
     "topic": "How do WebSockets differ from HTTP long polling?",
     "category": "normal",
     "expected_points": [
-      "WebSockets keep a single full-duplex connection open after an upgrade handshake",
-      "Long polling repeatedly opens requests that the server holds until data is ready",
-      "WebSockets have lower latency and overhead for frequent updates"
+      "WebSockets keep one connection open for two-way messaging after an HTTP upgrade",
+      "Long polling repeatedly issues requests that the server holds until it has data",
+      "WebSockets have lower latency and less overhead for frequent updates"
     ]
   },
   {
