@@ -38,6 +38,7 @@ class Prompt:
     format: str | None = None
     num_predict: int | None = None
     reasoning: bool | None = None
+    repeat_penalty: float | None = None
     description: str = ""
     input_variables: list[str] = field(default_factory=list)
 
@@ -70,6 +71,9 @@ class Prompt:
             # gemma4:12b is a thinking model: given a long prompt it spends the whole
             # generation reasoning and returns empty content. Judges set this to false.
             "reasoning": self.reasoning,
+            # Ollama's lever against phrase repetition, which is what the engagement judge
+            # penalised in every llama3.1:8b draft. Default is 1.1.
+            "repeat_penalty": self.repeat_penalty,
         }
         if self.format:
             settings["format"] = self.format
@@ -109,6 +113,7 @@ def load_prompt(name: str) -> Prompt:
         format=data.get("format"),
         num_predict=data.get("num_predict"),
         reasoning=data.get("reasoning"),
+        repeat_penalty=data.get("repeat_penalty"),
         description=data.get("description", ""),
         input_variables=data.get("input_variables", []),
     )

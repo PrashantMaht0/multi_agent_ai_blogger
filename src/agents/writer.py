@@ -3,7 +3,7 @@ src/agents/writer.py
 Content generation agent.
 """
 
-from langchain_core.messages import SystemMessage
+from src.agents.parsing import message_text, prompt_messages
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -18,9 +18,10 @@ def writer_node(state: AgentState) -> dict:
     prompt = prompt_spec.render(topic=topic, research=research, feedback=feedback)
 
     print("✍️ Writer is drafting the post...")
-    response = writer_llm.invoke([SystemMessage(content=prompt)])
+    response = writer_llm.invoke(prompt_messages(prompt, "Write the blog post now."))
     
     return {
-        "draft": response.content,
+        # message_text, not .content: Gemini returns a list of content blocks.
+        "draft": message_text(response),
         "sender": "writer"
     }

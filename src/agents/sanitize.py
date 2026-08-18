@@ -26,6 +26,11 @@ _ORPHAN_TAG_PATTERN = re.compile(
 )
 _EVENT_HANDLER_PATTERN = re.compile(r"\son[a-z]+\s*=\s*(\"[^\"]*\"|'[^']*'|[^\s>]+)", re.IGNORECASE)
 _JS_URL_PATTERN = re.compile(r"(href|src)\s*=\s*(\"|')?\s*javascript:[^\"'>\s]*(\"|')?", re.IGNORECASE)
+# Anything the model emits before the first real tag: a leaked chat role such as
+# "assistant", a markdown fence, or a "Here is the post:" preamble. llama3.1:8b leaks the
+# role token; qwen3 did not, so this is model-dependent and belongs in code.
+_PREAMBLE_PATTERN = re.compile(r"^[^<]*?(?=<\s*[a-zA-Z])", re.DOTALL)
+_TRAILING_FENCE_PATTERN = re.compile(r"```\s*$")
 
 
 def sanitize_html(draft: str) -> tuple[str, list[str]]:
@@ -35,7 +40,13 @@ def sanitize_html(draft: str) -> tuple[str, list[str]]:
 
     removed = []
 
-    cleaned, count = _BLOCK_PATTERN.subn("", draft)
+    cleaned = _TRAILING_FENCE_PATTERN.sub("", draft)
+    stripped_preamble = _PREAMBLE_PATTERN.match(cleaned)
+    if stripped_preamble and stripped_preamble.group().strip():
+        removed.append(f"preamble before the first tag ({stripped_preamble.group().strip()[:40]!r})")
+        cleaned = cleaned[stripped_preamble.end():]
+
+    cleaned, count = _BLOCK_PATTERN.subn("", cleaned)
     if count:
         removed.append(f"{count} script/iframe/style block(s)")
 

@@ -15,14 +15,20 @@ import json
 from langchain_core.messages import HumanMessage, SystemMessage
 
 
-def judge_messages(prompt: str) -> list:
-    """Message list a judge prompt is sent as.
+def prompt_messages(prompt: str, ask: str) -> list:
+    """Message list any agent prompt is sent as.
 
     Gemini rejects a request whose only message is a SystemMessage with
-    "ValueError: contents are required", so instructions go in the system turn and a
-    short user turn asks for the answer. Ollama is happy with the same shape.
+    "ValueError: contents are required", so instructions go in the system turn and a short
+    user turn asks for the output. Ollama is happy with the same shape, which keeps every
+    agent portable between the two providers.
     """
-    return [SystemMessage(content=prompt), HumanMessage(content="Give your verdict now.")]
+    return [SystemMessage(content=prompt), HumanMessage(content=ask)]
+
+
+def judge_messages(prompt: str) -> list:
+    """Message list for a judging prompt."""
+    return prompt_messages(prompt, "Give your verdict now.")
 
 
 def message_text(response) -> str:
