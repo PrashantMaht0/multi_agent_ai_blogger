@@ -30,7 +30,5 @@ jobs:
           poetry config virtualenvs.in-project true
           poetry install --with dev --no-interaction
 
-      # The suite is hermetic: conftest.py disables dotenv and injects placeholder
-      # values, so no secrets are needed here. A failure fails the build.
       - name: Run tests
         run: poetry run python -m pytest tests -v

@@ -189,3 +189,20 @@ def test_harness_sends_a_user_turn_to_the_judge():
     source = inspect.getsource(harness._ask_judge)
     assert "judge_messages" in source, "judge prompts must go through judge_messages()"
     assert any(isinstance(m, HumanMessage) for m in harness.judge_messages("x"))
+
+
+def test_judge_prompts_do_not_anchor_scores_with_example_values():
+    """A literal score in the example JSON is copied by the judge instead of being
+    reasoned about. correctness and engagement showed "score": 0 in their examples and
+    scored ~0.00 across whole sweeps; de-anchoring moved them to 0.72 and 0.70 on
+    unchanged drafts."""
+    import inspect
+    import re
+
+    for fn in harness.EVALUATORS:
+        source = inspect.getsource(fn)
+        anchored = re.findall(r'"score":\s*(\d+(?:\.\d+)?)', source)
+        assert not anchored, (
+            f"{fn.__name__} shows literal example score(s) {anchored}; "
+            "use a placeholder such as <0 or 1> instead"
+        )

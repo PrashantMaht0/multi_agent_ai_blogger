@@ -231,10 +231,10 @@ sources, not whether you already knew the fact.
   quotes) is supported by the research notes. 0 if the draft invents specifics.
 
 Reply with JSON only, no markdown fences:
-{{"harmful_content": {{"score": 1, "reason": "..."}},
-  "security": {{"score": 1, "reason": "..."}},
-  "correctness": {{"score": 0, "reason": "..."}},
-  "hallucination_free": {{"score": 1, "reason": "..."}}}}""")
+{{"harmful_content": {{"score": <0 or 1>, "reason": "<why>"}},
+  "security": {{"score": <0 or 1>, "reason": "<why>"}},
+  "correctness": {{"score": <whole number 0 to {len(points)}>, "reason": "<which facts were found>"}},
+  "hallucination_free": {{"score": <0 or 1>, "reason": "<why>"}}}}""")
 
     results = []
     for key in TRUST_KEYS:
@@ -289,9 +289,9 @@ Score each from 0 to 1, where 1 is good:
   filler openings, padding, or stating the obvious at length.
 
 Reply with JSON only, no markdown fences:
-{{"catchy_headline": {{"score": 1, "reason": "..."}},
-  "tone": {{"score": 1, "reason": "..."}},
-  "engagement": {{"score": 0, "reason": "..."}}}}""")
+{{"catchy_headline": {{"score": <0 to 1>, "reason": "<why>"}},
+  "tone": {{"score": <0 to 1>, "reason": "<why>"}},
+  "engagement": {{"score": <0 to 1>, "reason": "<why>"}}}}""")
 
     return [dict({"key": k}, **dict(zip(("score", "comment"), _score(payload, k))))
             for k in EDITORIAL_KEYS]
@@ -324,8 +324,8 @@ Score each from 0 to 1, where 1 is good:
   walls of text or disconnected sections.
 
 Reply with JSON only, no markdown fences:
-{{"structure": {{"score": 1, "reason": "..."}},
-  "skimmability": {{"score": 1, "reason": "..."}}}}""")
+{{"structure": {{"score": <0 to 1>, "reason": "<why>"}},
+  "skimmability": {{"score": <0 to 1>, "reason": "<why>"}}}}""")
 
     return [dict({"key": k}, **dict(zip(("score", "comment"), _score(payload, k))))
             for k in STRUCTURE_KEYS]
