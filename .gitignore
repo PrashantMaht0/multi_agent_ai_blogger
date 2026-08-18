@@ -34,3 +34,4 @@ env/
 .vscode
 claude.md
 .claude
+error_runs.jsonl

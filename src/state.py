@@ -18,6 +18,8 @@ class AgentState(TypedDict):
     validation_status: Optional[Literal["VALIDATED", "REJECTED"]]
     validation_feedback: Optional[str]
     run_status: Optional[Literal["FAILED"]]
+    # What the deterministic sanitizer stripped from the draft before publishing
+    sanitizer_removed: List[str]
 
     draft: str
     feedback: str

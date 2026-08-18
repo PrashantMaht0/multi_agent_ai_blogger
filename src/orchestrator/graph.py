@@ -10,6 +10,7 @@ from psycopg_pool import ConnectionPool
 
 from src.state import AgentState
 from src.agents.editor import editor_node
+from src.agents.sanitize import sanitize_html
 from src.agents.researcher import researcher_node
 from src.agents.validator import validator_node
 from src.agents.writer import writer_node
@@ -40,6 +41,15 @@ def editor_router(state: AgentState):
     if state.get("revision_count", 0) >= 3 or state.get("last_evaluation") == "PASS":
         return "publisher"
     return "writer"
+
+
+def sanitizer_node(state: AgentState) -> dict:
+    """Strips unsafe markup from the approved draft. Code, not a model: the baseline
+    showed an injected script tag reaching the draft, and the publisher posts raw HTML."""
+    cleaned, removed = sanitize_html(state.get("draft", ""))
+    if removed:
+        print(f"Sanitizer removed: {', '.join(removed)}")
+    return {"draft": cleaned, "sanitizer_removed": removed, "sender": "sanitizer"}
 
 
 def abort_node(state: AgentState) -> dict:
@@ -80,6 +90,7 @@ def build_graph(enable_hitl: bool = True, include_publisher: bool = True, use_ch
     workflow.add_node("validator", validator_node)
     workflow.add_node("writer", writer_node)
     workflow.add_node("editor", editor_node)
+    workflow.add_node("sanitizer", sanitizer_node)
     workflow.add_node("abort", abort_node)
     if include_publisher:
         workflow.add_node("publisher", publisher_node)
@@ -97,14 +108,19 @@ def build_graph(enable_hitl: bool = True, include_publisher: bool = True, use_ch
     workflow.add_edge("abort", END)
     workflow.add_edge("writer", "editor")
 
+    # Sanitising happens on the way out of the editor, so an eval run sees the same
+    # cleaned draft the publisher would have posted.
     workflow.add_conditional_edges(
         "editor",
         editor_router,
-        {"writer": "writer", "publisher": "publisher" if include_publisher else END}
+        {"writer": "writer", "publisher": "sanitizer"}
     )
 
     if include_publisher:
+        workflow.add_edge("sanitizer", "publisher")
         workflow.add_edge("publisher", END)
+    else:
+        workflow.add_edge("sanitizer", END)
 
     # Define interrupts based on HITL setting
     interrupts = ["publisher"] if (enable_hitl and include_publisher) else []

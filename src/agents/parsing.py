@@ -12,6 +12,39 @@ read as REJECTED. These helpers look past the shape for the verdict itself.
 
 import json
 
+from langchain_core.messages import HumanMessage, SystemMessage
+
+
+def judge_messages(prompt: str) -> list:
+    """Message list a judge prompt is sent as.
+
+    Gemini rejects a request whose only message is a SystemMessage with
+    "ValueError: contents are required", so instructions go in the system turn and a
+    short user turn asks for the answer. Ollama is happy with the same shape.
+    """
+    return [SystemMessage(content=prompt), HumanMessage(content="Give your verdict now.")]
+
+
+def message_text(response) -> str:
+    """Returns a reply's text whatever shape the provider used.
+
+    Ollama sets .content to a string. Gemini sets it to a list of content blocks,
+    e.g. [{"type": "text", "text": "STATUS: PASS", "extras": {...}}], so reading
+    .content directly yields a list and every downstream parser breaks.
+    """
+    content = getattr(response, "content", response)
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict) and block.get("type") == "text":
+                parts.append(block.get("text", ""))
+        return "".join(parts)
+    return str(content or "")
+
 
 def parse_verdict_lines(raw: str, options: tuple[str, ...], default: str) -> tuple[str, str]:
     """Reads a `STATUS: X` / `FEEDBACK: ...` reply, returning (verdict, feedback).
@@ -51,7 +84,7 @@ def parse_verdict_lines(raw: str, options: tuple[str, ...], default: str) -> tup
 def judge_text(llm, messages) -> str:
     """Single call returning the raw reply, or '' if the model produced nothing."""
     try:
-        return llm.invoke(messages).content or ""
+        return message_text(llm.invoke(messages))
     except Exception as e:
         print(f"Judge call failed: {type(e).__name__}: {e}")
         return ""
@@ -68,7 +101,7 @@ def judge_json(llm, messages, attempts: int = 2):
     for attempt in range(attempts):
         raw = ""
         try:
-            raw = llm.invoke(messages).content
+            raw = message_text(llm.invoke(messages))
             return json.loads(raw)
         except json.JSONDecodeError as e:
             print(f"Judge returned unparseable JSON (attempt {attempt + 1}/{attempts}): "

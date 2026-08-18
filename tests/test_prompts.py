@@ -44,7 +44,8 @@ def test_agent_prompts_render_with_their_declared_variables():
     filled = {
         "validator": {"topic": "MCP", "research_notes": '["a fact"]', "error_context": ""},
         "writer": {"topic": "MCP", "research": "- a fact", "feedback": "none"},
-        "editor": {"topic": "MCP", "research_notes": "- a fact", "draft": "<p>x</p>"},
+        # The editor no longer receives research notes: it judges writing, not facts.
+        "editor": {"topic": "MCP", "draft": "<p>x</p>"},
     }
     for name, values in filled.items():
         rendered = load_prompt(name).render(**values)
@@ -76,15 +77,28 @@ def test_yaml_model_can_pin_a_model_for_an_ab_test(monkeypatch):
     )
 
 
-@pytest.mark.parametrize("name", ["validator", "editor"])
-def test_judges_disable_thinking_and_cap_output(name):
-    """gemma4:12b spends a long prompt's whole generation reasoning and returns empty
-    content, and its json mode answers with a lone {"thought": ...} object."""
-    prompt = load_prompt(name)
+def test_local_judge_disables_thinking_and_caps_output():
+    """A local thinking model spends a long prompt's whole generation reasoning and
+    returns empty content, and its json mode answers with a lone {"thought": ...}."""
+    editor = load_prompt("editor")
 
-    assert prompt.reasoning is False
-    assert prompt.num_predict
-    assert prompt.format is None
+    assert editor.reasoning is False
+    assert editor.num_predict
+    assert editor.format is None
+
+
+def test_validator_runs_on_a_hosted_model_with_current_knowledge():
+    """gemma4:12b rejected correct research about anything past its training cutoff."""
+    validator = load_prompt("validator")
+
+    assert validator.model.startswith("gemini")
+    assert validator.num_predict
+
+
+def test_only_the_validator_is_hosted():
+    """Everything else stays local, so a run costs nothing but the web search."""
+    hosted = [n for n in AGENTS if load_prompt(n).model.startswith("gemini")]
+    assert hosted == ["validator"]
 
 
 def test_each_agent_loads_only_its_own_prompt():

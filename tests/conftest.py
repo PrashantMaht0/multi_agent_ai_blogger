@@ -15,6 +15,9 @@ dotenv.find_dotenv = lambda *args, **kwargs: ""
 # Deterministic placeholders. No real key ever reaches a test.
 os.environ.update({
     "TAVILY_API_KEY": "test-tavily-key",
+    # The validator builds a Gemini client at import; tests always replace it, but the
+    # constructor still refuses to build without a key.
+    "GEMINI_API_KEY": "test-gemini-key",
     "BLOGGER_BLOG_ID": "test-blog-id",
     "WORKER_MODEL": "test-worker-model",
     "EDITOR_MODEL": "test-editor-model",

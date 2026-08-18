@@ -3,8 +3,7 @@ src/agents/editor.py
 LLM-as-a-judge control loop using gemma4:12b.
 """
 
-from langchain_core.messages import SystemMessage
-from src.agents.parsing import judge_text, parse_verdict_lines
+from src.agents.parsing import judge_messages, judge_text, parse_verdict_lines
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -13,13 +12,10 @@ prompt_spec = load_prompt("editor")
 editor_llm = prompt_spec.llm()
 
 def editor_node(state: AgentState) -> dict:
-    prompt = prompt_spec.render(
-        topic=state["topic"],
-        research_notes=state["research_notes"],
-        draft=state["draft"],
-    )
+    # No research_notes: the validator owns fact-checking, this node only judges writing.
+    prompt = prompt_spec.render(topic=state["topic"], draft=state["draft"])
 
-    raw = judge_text(editor_llm, [SystemMessage(content=prompt)])
+    raw = judge_text(editor_llm, judge_messages(prompt))
 
     if not raw.strip():
         # A judge that answers nothing has not judged the draft. Failing here forced a

@@ -4,12 +4,11 @@ Agent responsible for validating sources and factual consistency from researcher
 """
 
 import json
-from langchain_core.messages import SystemMessage
-from src.agents.parsing import judge_text, parse_verdict_lines
+from src.agents.parsing import judge_messages, judge_text, parse_verdict_lines
 from src.prompts import load_prompt
 from src.state import AgentState
 
-# Use Gemma for strong reasoning and structured output
+# Hosted model: it is the only node that checks facts, and it needs current knowledge
 prompt_spec = load_prompt("validator")
 validator_llm = prompt_spec.llm()
 
@@ -27,7 +26,7 @@ def validator_node(state: AgentState) -> dict:
     )
 
     try:
-        raw = judge_text(validator_llm, [SystemMessage(content=prompt)])
+        raw = judge_text(validator_llm, judge_messages(prompt))
         if not raw.strip():
             # Silence is not a rejection. Treating it as one burned research attempts and
             # aborted healthy runs; the editor is still downstream.

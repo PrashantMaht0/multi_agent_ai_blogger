@@ -143,6 +143,7 @@ def start_generation(topic: str, request: gr.Request):
         "validation_status": None,
         "validation_feedback": None,
         "run_status": None,
+        "sanitizer_removed": [],
         "draft": "",
         "feedback": "",
         "last_evaluation": None,
@@ -182,6 +183,12 @@ def start_generation(topic: str, request: gr.Request):
                 elif node_name == "writer":
                     current_draft = state_update.get("draft", current_draft)
                     logs += "   - Draft generated / updated.\n\n"
+
+                elif node_name == "sanitizer":
+                    stripped = state_update.get("sanitizer_removed") or []
+                    current_draft = state_update.get("draft", current_draft)
+                    logs += (f"   - Removed unsafe markup: {', '.join(stripped)}\n\n"
+                             if stripped else "   - Draft is clean; nothing removed.\n\n")
 
                 elif node_name == "editor":
                     eval_status = state_update.get("last_evaluation")
