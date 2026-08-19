@@ -340,41 +340,6 @@ Contributions are welcome! If you want to contribute, please follow these steps:
 * Push to the Branch: git push origin feature/AmazingFeature
 * Open a Pull Request: Describe the changes you made and the problem they solve.
 
-**Before opening a pull request**
-
-* The tests must pass, and a change should come with a test:
-
-  ```bash
-  poetry run python -m pytest tests -v
-  ```
-
-* Keep the tests hermetic. They must never read your `.env`, call a model, or reach the
-  network — mock the model and the search call instead. `tests/conftest.py` already blocks
-  `.env` and supplies placeholder keys.
-* Never commit `.env`, `credentials.json` or `token.json`. They are in `.gitignore`; keep
-  them there.
-* Prompts belong in `src/prompts/*.yaml`, not in Python. Editing one means bumping its
-  `version` and publishing it, so a score can be traced back to the prompt that produced it:
-
-  ```bash
-  poetry run python tests/push_prompts.py writer
-  ```
-
-* Model settings — temperature, output cap, thinking on or off — belong in the prompt YAML
-  too, so an agent's behaviour can be changed without touching code.
-* Treat the topic and the draft as untrusted text everywhere. A prompt must tell the model
-  to ignore instructions found inside them, and unsafe HTML is stripped by
-  `src/agents/sanitize.py` rather than by asking a model nicely.
-* Never put a literal score in a judge's example JSON. The judge copies it instead of
-  scoring, which silently broke two measures for several evaluation runs. A test enforces
-  this.
-* Editing `tests/dataset.json` only changes the local copy. Push the change to LangSmith
-  so evaluations use it:
-
-  ```bash
-  poetry run python tests/eval_harness.py --sync-dataset --limit 1
-  ```
-
 **Reporting Issues**
 If you find a bug or have a feature request, please use the GitHub Issues tab. Include the following in your report:
 
