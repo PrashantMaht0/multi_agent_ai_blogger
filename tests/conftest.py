@@ -1,23 +1,17 @@
-"""
-tests/conftest.py
-Keeps the suite hermetic: no .env, no credentials, no live LLM or API calls.
-Runs before any src import so module-level load_dotenv() calls are already neutered.
-"""
+"""Keeps the suite hermetic: no .env, no credentials, no live model or API calls."""
 
 import os
 import dotenv
 import pytest
 
-# Neutralise dotenv before src modules import it, so a developer's real .env is ignored
+# Neutralise dotenv before any src import, so a real .env is never read.
 dotenv.load_dotenv = lambda *args, **kwargs: False
 dotenv.find_dotenv = lambda *args, **kwargs: ""
 
-# Deterministic placeholders. No real key ever reaches a test.
+# Placeholder keys, so no real credential reaches a test.
 os.environ.update({
     "TAVILY_API_KEY": "test-tavily-key",
-    # The validator builds a Gemini client at import; tests always replace it, but the
-    # constructor still refuses to build without a key.
-    "GEMINI_API_KEY": "test-gemini-key",
+    "GEMINI_API_KEY": "test-gemini-key",  # the validator builds a client at import
     "BLOGGER_BLOG_ID": "test-blog-id",
     "WORKER_MODEL": "test-worker-model",
     "EDITOR_MODEL": "test-editor-model",
@@ -27,14 +21,14 @@ os.environ.pop("POSTGRES_DB_URL", None)
 
 
 class FakeResponse:
-    """Stands in for a LangChain message returned by ChatOllama.invoke()."""
+    """Stands in for a message returned by a chat model."""
 
     def __init__(self, content: str):
         self.content = content
 
 
 class FakeLLM:
-    """Records the prompt it was given and replays a canned response."""
+    """Records the prompt it was given and replays a canned reply."""
 
     def __init__(self, content: str):
         self.content = content

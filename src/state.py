@@ -1,7 +1,4 @@
-"""
-src/state.py
-Updated state schema including validation metrics.
-"""
+"""Shared state passed between every node in the graph."""
 
 from typing import List, Optional, Literal, Dict, Any
 from typing_extensions import TypedDict
@@ -9,16 +6,15 @@ from typing_extensions import TypedDict
 
 class AgentState(TypedDict):
     topic: str
-    # Replaced (not appended) on every research pass so failed/stale notes cannot linger
+    # Replaced on every research pass, so stale notes cannot linger.
     research_notes: List[str]
     research_error: Optional[str]
     research_attempts: int
-    # New validator tracking fields
     raw_sources: List[Dict[str, Any]]
     validation_status: Optional[Literal["VALIDATED", "REJECTED"]]
     validation_feedback: Optional[str]
     run_status: Optional[Literal["FAILED"]]
-    # What the deterministic sanitizer stripped from the draft before publishing
+    # What the sanitizer stripped from the draft.
     sanitizer_removed: List[str]
 
     draft: str

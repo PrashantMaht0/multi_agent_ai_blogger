@@ -1,25 +1,17 @@
-"""
-src/mcp_servers/search_server.py
-FastMCP Server exposing web search capabilities for the Researcher Agent.
-"""
+"""MCP server exposing web search to the Researcher agent."""
 
 import os
 import requests
 from fastmcp import FastMCP
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Initialize the FastMCP server instance
 mcp = FastMCP(name="ResearchServer")
 
 @mcp.tool
 def search_web(query: str) -> str:
-    """
-    Searches the web for factual information regarding the query.
-    Returns a summarized string of the top results.
-    """
+    """Searches the web and returns a summary of the top results."""
     api_key = os.getenv("TAVILY_API_KEY")
     if not api_key:
         return "Error: TAVILY_API_KEY is not set in the environment variables."
@@ -38,7 +30,7 @@ def search_web(query: str) -> str:
         response.raise_for_status()
         data = response.json()
         
-        # Format the output into a clean string for the LLM context
+        # Flatten the response into one string for the model.
         results = [f"Result: {data.get('answer', 'No direct answer generated.')}\n"]
         for item in data.get("results", []):
             results.append(f"- Source: {item.get('title')} ({item.get('url')})\n  Snippet: {item.get('content')}")
@@ -49,5 +41,4 @@ def search_web(query: str) -> str:
         return f"Error executing web search: {str(e)}"
 
 if __name__ == "__main__":
-    # The server runs locally on stdio, enabling the LangChain MCP client to talk to it
     mcp.run(transport="stdio")

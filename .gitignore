@@ -1,31 +1,15 @@
-# -----------------------------
-# Secrets & Credentials (CRITICAL)
-# -----------------------------
+
 .env
 credentials.json
 token.json
 
-# -----------------------------
-# Temporary & Local Files
-# -----------------------------
 temp.txt
-auth_blogger.py
 
-# -----------------------------
-# Local Dependency Tool Configs
-# -----------------------------
 poetry.toml
-
-# -----------------------------
-# Python Cache & Bytecode
-# -----------------------------
 __pycache__/
 *.py[cod]
 *$py.class
 
-# -----------------------------
-# Virtual Environments
-# -----------------------------
 .venv/
 dev-env/
 venv/

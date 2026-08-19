@@ -1,17 +1,9 @@
-"""
-tests/eval_harness.py
-LangSmith evaluation for the blogging pipeline.
+"""LangSmith evaluation: runs the pipeline over tests/dataset.json and scores each draft.
 
-Runs the single-turn graph (no publisher, no checkpointer) over tests/dataset.json and
-scores each draft with three grouped judges running on Gemini.
-
-    python tests/eval_harness.py --limit 5     # 5 Tavily searches, 15 judge calls
+    python tests/eval_harness.py --limit 5     # 5 topics
     python tests/eval_harness.py               # all 20
 
-Judges are grouped rather than one-per-metric: each group is a single call that returns
-several scores, so a full sweep costs 3 judge calls per example instead of 10.
-Each example also performs one live web search, so a full sweep spends 20 Tavily credits.
-Not collected by pytest: the filename does not match test_*.py.
+Each topic spends one web search credit and three Gemini judge calls.
 """
 
 import argparse
@@ -37,7 +29,7 @@ eval_graph = build_graph(enable_hitl=False, include_publisher=False, use_checkpo
 
 
 def _judge_llm():
-    """Built per call so a long sweep cannot be broken by one stale client."""
+    """Builds a judge client per call, so one stale client cannot break a sweep."""
     from langchain_google_genai import ChatGoogleGenerativeAI
 
     api_key = os.getenv("GEMINI_API_KEY")
@@ -45,8 +37,6 @@ def _judge_llm():
         raise SystemExit("GEMINI_API_KEY is not set. Add it to your .env - see example.env.")
     return ChatGoogleGenerativeAI(model=JUDGE_MODEL, google_api_key=api_key, max_output_tokens=1024)
 
-
-# ------------------------------------------------------------------ dataset
 
 def sync_dataset(client) -> str:
     """Creates the LangSmith dataset from dataset.json. Reuses it if it already exists."""
@@ -78,15 +68,8 @@ def sync_dataset(client) -> str:
     return DATASET_NAME
 
 
-# ------------------------------------------------------------------- target
-
 def push_dataset_edits(client) -> int:
-    """Copies the reference answers from dataset.json onto the existing LangSmith examples.
-
-    sync_dataset only creates a dataset that does not exist yet, so edits to
-    expected_points would otherwise never reach LangSmith and the correctness score would
-    keep grading against the old wording. Matched by topic; inputs are left alone.
-    """
+    """Copies edited reference answers from dataset.json onto the LangSmith examples."""
     wanted = {row["topic"]: row for row in json.loads(DATASET_PATH.read_text())}
     updates = []
 
@@ -137,8 +120,6 @@ def run_pipeline(inputs: dict) -> dict:
     }
 
 
-# ---------------------------------------------------------------- judging
-
 def _ask_judge(prompt: str) -> dict | str:
     """Returns the judge's parsed JSON, or an error string if it could not be read."""
     raw = ""
@@ -177,8 +158,7 @@ def _no_draft(outputs: dict) -> bool:
     return outputs.get("run_status") == "FAILED" or not (outputs.get("draft") or "").strip()
 
 
-# ------------------------------------------------------- 1. Trust & Safety
-
+# 1. Trust and safety.
 TRUST_KEYS = ("harmful_content", "security", "correctness", "hallucination_free")
 
 
@@ -244,7 +224,7 @@ Reply with JSON only, no markdown fences:
                 results.append({"key": key, "score": None,
                                 "comment": "No reference points (adversarial example)."})
                 continue
-            # The judge counts facts; convert the count to a fraction.
+            # The judge counts facts, so convert the count to a fraction.
             raw, _ = _score(payload, key)
             if isinstance(payload, dict) and isinstance(payload.get(key), dict):
                 counted = payload[key].get("score")
@@ -261,8 +241,7 @@ Reply with JSON only, no markdown fences:
     return results
 
 
-# --------------------------------------------- 2. Editorial & Reader Experience
-
+# 2. Editorial and reader experience.
 EDITORIAL_KEYS = ("catchy_headline", "tone", "engagement")
 
 
@@ -297,8 +276,7 @@ Reply with JSON only, no markdown fences:
             for k in EDITORIAL_KEYS]
 
 
-# ------------------------------------------------ 3. Structure & Visual Layout
-
+# 3. Structure and layout.
 STRUCTURE_KEYS = ("structure", "skimmability")
 
 
@@ -333,8 +311,6 @@ Reply with JSON only, no markdown fences:
 
 EVALUATORS = [trust_and_safety, editorial_experience, structure_and_layout]
 
-
-# --------------------------------------------------------------------- main
 
 def main():
     parser = argparse.ArgumentParser(description="Run the LangSmith evaluation sweep.")

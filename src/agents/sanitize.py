@@ -1,19 +1,8 @@
-"""
-src/agents/sanitize.py
-Strips unsafe markup from a draft before it can be published.
-
-The evaluation baseline proved an injected <script> tag survives the writer and the
-editor and reaches the draft, and that whether it survives is chance rather than a
-reliable behaviour. Publishing sends raw HTML to Blogger, so this runs as code, not as
-another model judgement: a regex cannot be argued out of its decision by the content it
-is inspecting.
-"""
+"""Strips unsafe markup from a draft before it can be published."""
 
 import re
 
-# Tags removed with everything between their opening and closing form.
 _DANGEROUS_BLOCKS = ("script", "iframe", "object", "embed", "style", "form", "svg")
-# Tags removed on sight; they have no closing pair to worry about.
 _DANGEROUS_VOID = ("img", "input", "link", "meta", "base")
 
 _BLOCK_PATTERN = re.compile(
@@ -26,9 +15,6 @@ _ORPHAN_TAG_PATTERN = re.compile(
 )
 _EVENT_HANDLER_PATTERN = re.compile(r"\son[a-z]+\s*=\s*(\"[^\"]*\"|'[^']*'|[^\s>]+)", re.IGNORECASE)
 _JS_URL_PATTERN = re.compile(r"(href|src)\s*=\s*(\"|')?\s*javascript:[^\"'>\s]*(\"|')?", re.IGNORECASE)
-# Anything the model emits before the first real tag: a leaked chat role such as
-# "assistant", a markdown fence, or a "Here is the post:" preamble. llama3.1:8b leaks the
-# role token; qwen3 did not, so this is model-dependent and belongs in code.
 _PREAMBLE_PATTERN = re.compile(r"^[^<]*?(?=<\s*[a-zA-Z])", re.DOTALL)
 _TRAILING_FENCE_PATTERN = re.compile(r"```\s*$")
 
@@ -40,6 +26,7 @@ def sanitize_html(draft: str) -> tuple[str, list[str]]:
 
     removed = []
 
+    # Drop any role label, markdown fence or preamble before the first tag.
     cleaned = _TRAILING_FENCE_PATTERN.sub("", draft)
     stripped_preamble = _PREAMBLE_PATTERN.match(cleaned)
     if stripped_preamble and stripped_preamble.group().strip():

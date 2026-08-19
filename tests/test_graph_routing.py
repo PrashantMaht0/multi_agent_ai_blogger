@@ -1,7 +1,4 @@
-"""
-tests/test_graph_routing.py
-Pure routing/state tests. No LLM calls, no network, no .env required.
-"""
+"""Routing and state tests, with no model calls."""
 
 from src.orchestrator.graph import (
     MAX_RESEARCH_ATTEMPTS,
@@ -21,7 +18,7 @@ def test_rejected_research_retries_researcher():
 
 
 def test_exhausted_research_aborts_instead_of_drafting():
-    """Regression: the breaker used to bypass to the writer, feeding it error text."""
+    """Exhausted research aborts instead of reaching the writer."""
     state = {
         "validation_status": "REJECTED",
         "research_attempts": MAX_RESEARCH_ATTEMPTS,
@@ -31,14 +28,14 @@ def test_exhausted_research_aborts_instead_of_drafting():
 
 
 def test_research_budget_allows_one_retry_then_stops():
-    """Two passes: the first rejection re-searches, the second gives up."""
+    """The first rejection re-searches, the second gives up."""
     assert MAX_RESEARCH_ATTEMPTS == 2
     assert validation_router({"validation_status": "REJECTED", "research_attempts": 1}) == "researcher"
     assert validation_router({"validation_status": "REJECTED", "research_attempts": 2}) == "abort"
 
 
 def test_editor_budget_is_separate_from_research_budget():
-    """A failed research loop must not consume the writer/editor revision budget."""
+    """The research loop must not spend the writer's revision budget."""
     state = {"validation_status": "REJECTED", "research_attempts": 3, "revision_count": 0}
     assert validation_router(state) == "abort"
     assert editor_router({"last_evaluation": "FAIL", "revision_count": 0}) == "writer"
@@ -63,7 +60,7 @@ def test_editor_circuit_breaker_forces_publisher():
 
 
 def test_misspelled_verdict_is_normalised_to_validated(monkeypatch):
-    """Regression: gemma4:12b returned 'VALIDED', which looped researcher<->validator."""
+    """A misspelled verdict is read as VALIDATED."""
     import src.agents.validator as validator
 
     class FakeResponse:
@@ -97,7 +94,7 @@ def test_unknown_verdict_is_treated_as_rejection(monkeypatch):
 
 
 def test_researcher_burns_an_attempt_on_any_unaccepted_verdict(monkeypatch):
-    """Without this the breaker never trips and the loop runs forever."""
+    """Every researcher pass spends an attempt."""
     import src.agents.researcher as researcher
 
     monkeypatch.setattr(researcher, "_run_research_agent", lambda topic: topic)
@@ -112,7 +109,7 @@ def test_researcher_burns_an_attempt_on_any_unaccepted_verdict(monkeypatch):
 
 
 def test_research_notes_replace_rather_than_accumulate():
-    """State must not carry stale/failed notes forward between research passes."""
+    """A new research pass replaces the previous notes."""
     from src.orchestrator.graph import build_graph
 
     graph = build_graph(enable_hitl=False, include_publisher=False, use_checkpointer=False)

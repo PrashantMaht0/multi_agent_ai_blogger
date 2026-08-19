@@ -1,10 +1,4 @@
-"""
-src/prompts/__init__.py
-Loads a versioned prompt definition from src/prompts/<name>.yaml.
-
-Each agent loads only its own file. Templates use mustache-style {{variable}} markers so
-literal JSON braces in a prompt need no escaping.
-"""
+"""Loads a versioned prompt definition from src/prompts/<name>.yaml."""
 
 import os
 import re
@@ -16,7 +10,7 @@ from langchain_ollama import ChatOllama
 
 PROMPTS_DIR = Path(__file__).parent
 
-# model: ${ENV_VAR:default}  -> env var if set, otherwise the default after the first colon
+# model: ${ENV_VAR:default} - env var if set, else the default after the first colon.
 _ENV_PATTERN = re.compile(r"^\$\{([A-Z0-9_]+):(.*)\}$")
 _VARIABLE_PATTERN = re.compile(r"\{\{\s*(\w+)\s*\}\}")
 
@@ -43,21 +37,14 @@ class Prompt:
     input_variables: list[str] = field(default_factory=list)
 
     def render(self, **values) -> str:
-        """Substitutes {{variable}} markers. Raises if the template needs a value we lack."""
+        """Substitutes {{variable}} markers, raising if a value is missing."""
         missing = set(_VARIABLE_PATTERN.findall(self.template)) - set(values)
         if missing:
             raise KeyError(f"Prompt '{self.name}' is missing values for: {sorted(missing)}")
         return _VARIABLE_PATTERN.sub(lambda m: str(values[m.group(1)]), self.template)
 
     def llm(self, **overrides):
-        """Builds the chat model this prompt declares.
-
-        Called per invocation, never cached at import: a ChatOllama holds an httpx client
-        bound to the event loop that first used it, and asyncio.run() closes that loop.
-
-        A model name starting with "gemini" is served by Google, anything else by the local
-        Ollama instance, so a prompt moves between providers by editing one line of YAML.
-        """
+        """Builds the chat model this prompt declares, hosted for gemini and local otherwise."""
         if self.model.startswith("gemini"):
             return self._google_llm(**overrides)
 
@@ -65,14 +52,8 @@ class Prompt:
             "model": self.model,
             "temperature": self.temperature,
             "base_url": os.getenv("OLLAMA_BASE_URL"),
-            # Hard ceiling on generation. A judge that should answer in 7 tokens has been
-            # observed running to 2900 tokens of malformed JSON, which then fails to parse.
             "num_predict": self.num_predict,
-            # gemma4:12b is a thinking model: given a long prompt it spends the whole
-            # generation reasoning and returns empty content. Judges set this to false.
             "reasoning": self.reasoning,
-            # Ollama's lever against phrase repetition, which is what the engagement judge
-            # penalised in every llama3.1:8b draft. Default is 1.1.
             "repeat_penalty": self.repeat_penalty,
         }
         if self.format:
@@ -81,7 +62,7 @@ class Prompt:
         return ChatOllama(**{k: v for k, v in settings.items() if v is not None})
 
     def _google_llm(self, **overrides):
-        """Gemini through the Google API. Imported lazily so local-only runs need no key."""
+        """Builds a Gemini client, imported lazily so local-only runs need no key."""
         from langchain_google_genai import ChatGoogleGenerativeAI
 
         api_key = os.getenv("GEMINI_API_KEY")
@@ -94,7 +75,6 @@ class Prompt:
         settings = {
             "model": self.model,
             "google_api_key": api_key,
-            # flash-lite ignores temperature and warns about it, so it is not sent.
             "max_output_tokens": self.num_predict,
         }
         settings.update(overrides)

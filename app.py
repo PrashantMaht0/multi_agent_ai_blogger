@@ -1,8 +1,4 @@
-"""
-app.py
-Gradio Frontend Dashboard for the AI Blogger Multi-Agent System.
-Supports real-time agent execution streaming, draft inspection, and Human-in-the-Loop (HITL) approval.
-"""
+"""Gradio dashboard: streams the workflow, shows the draft, and gates publishing."""
 
 import os
 import atexit
@@ -11,19 +7,14 @@ import uuid
 import gradio as gr
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Import the compiled LangGraph application
 from src.orchestrator.graph import build_graph
 
-# Initialize graph with HITL enabled
 app_graph = build_graph(enable_hitl=True)
 
 
-# ==========================================
-# Run lifecycle tracking
-# ==========================================
+# Run lifecycle tracking.
 _stop_flags: dict[str, threading.Event] = {}      # thread_id -> stop signal
 _session_threads: dict[str, set[str]] = {}        # gradio session_hash -> thread_ids
 _paused_threads: set[str] = set()                 # parked at HITL, safe to resume later
@@ -49,7 +40,7 @@ def _release_run(thread_id: str):
 
 
 def _discard_thread(thread_id: str):
-    """Deletes the persisted checkpoint so a cancelled run can never be resumed."""
+    """Deletes the saved checkpoint so a cancelled run cannot be resumed."""
     checkpointer = getattr(app_graph, "checkpointer", None)
     if checkpointer is not None:
         try:
@@ -66,8 +57,7 @@ def request_stop(thread_id: str, existing_logs: str):
 
     _stop_flags[thread_id].set()
     logs = existing_logs + "\n[STOP] Stop requested. Halting after the current agent finishes...\n"
-    # New Blog is enabled straight away so the dashboard can never deadlock if the
-    # generator is torn down (GeneratorExit) before it reaches its terminal yield.
+    # Enable New Blog now, in case the generator never reaches its terminal yield.
     return logs, gr.update(interactive=False), gr.update(interactive=True)
 
 
@@ -109,14 +99,9 @@ def _cancel_all_runs():
         _cancel_run(thread_id, "SHUTDOWN")
 
 
-# ==========================================
-# Workflow handlers
-# ==========================================
+# Workflow handlers.
 def start_generation(topic: str, request: gr.Request):
-    """
-    Initializes the agentic workflow for a given topic.
-    Runs Researcher -> Validator -> Writer -> Editor loop, then pauses before Publisher.
-    """
+    """Runs the workflow for a topic and pauses before publishing."""
     idle_buttons = (gr.update(interactive=True), gr.update(interactive=False),
                     gr.update(interactive=False), gr.update(interactive=False))
 
@@ -129,7 +114,7 @@ def start_generation(topic: str, request: gr.Request):
                "", "", "", *idle_buttons, "")
         return
 
-    # Generate a unique thread ID for this execution session
+    # One thread id per run, used to save and resume its state.
     thread_id = str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
     stop_flag = _register_run(thread_id, request.session_hash)
@@ -157,13 +142,11 @@ def start_generation(topic: str, request: gr.Request):
     current_draft = ""
     latest_feedback = ""
 
-    # running: generate off, stop on, publish off, new blog off
     running_buttons = (gr.update(interactive=False), gr.update(interactive=True),
                        gr.update(interactive=False), gr.update(interactive=False))
     yield logs, current_draft, latest_feedback, "", *running_buttons, thread_id
 
     try:
-        # Stream updates synchronously
         for event in app_graph.stream(initial_state, config=config, stream_mode="updates"):
             for node_name, state_update in event.items():
                 logs += f"[{node_name.upper()}] Node completed.\n"
@@ -192,7 +175,7 @@ def start_generation(topic: str, request: gr.Request):
 
                 elif node_name == "editor":
                     eval_status = state_update.get("last_evaluation")
-                    # The editor returns empty feedback on PASS, which would leave the box blank
+                    # The editor sends no feedback on PASS, so fill the box.
                     latest_feedback = state_update.get("feedback") or (
                         "PASS - no revisions requested." if eval_status == "PASS"
                         else "No feedback provided."
@@ -211,7 +194,7 @@ def start_generation(topic: str, request: gr.Request):
                 yield logs, current_draft, latest_feedback, "Run stopped.", *terminal, ""
                 return
 
-        # Check if the graph paused at an interrupt (before publisher)
+        # A pending 'publisher' step means the run is waiting for approval.
         state_snapshot = app_graph.get_state(config)
         final_state = state_snapshot.values
 
@@ -245,16 +228,13 @@ def start_generation(topic: str, request: gr.Request):
         yield logs, current_draft, latest_feedback, f"Error: {str(e)}", *terminal, ""
 
     finally:
-        # Gradio tears the generator down with GeneratorExit when the tab reloads or the
-        # event is cancelled. Without this the run would stay 'active' and block the next one.
+        # Release the run even when Gradio tears this generator down mid-stream.
         if _active_thread == thread_id and thread_id not in _paused_threads:
             _discard_thread(thread_id)
 
 
 def approve_and_publish(thread_id: str, existing_logs: str):
-    """
-    Resumes the paused LangGraph workflow from the database checkpoint.
-    """
+    """Resumes the paused workflow from its saved checkpoint and publishes."""
     if not thread_id:
         yield (existing_logs + "\n[WARN] No active session thread found to resume.", "",
                gr.update(interactive=False), gr.update(interactive=True))
@@ -276,7 +256,6 @@ def approve_and_publish(thread_id: str, existing_logs: str):
 
     try:
         published = False
-        # Resume synchronous execution from the stored checkpoint
         for event in app_graph.stream(None, config=config, stream_mode="updates"):
             for node_name, state_update in event.items():
                 if node_name == "publisher":
@@ -297,7 +276,7 @@ def approve_and_publish(thread_id: str, existing_logs: str):
 
 
 def _load_theme():
-    """Cartoon theme is fetched from the HF hub; fall back if the host is offline."""
+    """Loads the hub theme, falling back to a built-in one when offline."""
     try:
         return gr.Theme.from_hub("harsh8001/cartoon-style")
     except Exception as e:
@@ -305,11 +284,7 @@ def _load_theme():
         return gr.themes.Soft()
 
 
-# ==========================================
-# Gradio UI Layout Definition
-# ==========================================
-# The cartoon theme's large radii plus `overflow: hidden` on each block clip text at the
-# rounded corners (the leading letter of the heading disappears), so tighten them here.
+# Tighten the theme's corner radii, which otherwise clip text.
 _CSS = """
 .gradio-container { padding: 20px 24px !important; max-width: 1400px; }
 .gradio-container { --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
@@ -373,7 +348,6 @@ with gr.Blocks(title="AI Blogger - Multi-Agent Studio") as demo:
                 interactive=False
             )
 
-    # Wire Event Handlers
     generate_btn.click(
         fn=start_generation,
         inputs=[topic_input],
@@ -424,6 +398,6 @@ with gr.Blocks(title="AI Blogger - Multi-Agent Studio") as demo:
 if __name__ == "__main__":
     server_port = int(os.getenv("GRADIO_SERVER_PORT", 7860))
     server_name = os.getenv("GRADIO_SERVER_NAME", "0.0.0.0")
-    # Gradio 6 moved `theme` and `css` from the Blocks constructor to launch()
+    # Gradio 6 takes theme and css here, not on Blocks.
     demo.queue().launch(server_name=server_name, server_port=server_port,
                         theme=_load_theme(), css=_CSS)

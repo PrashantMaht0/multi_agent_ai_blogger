@@ -1,14 +1,4 @@
-"""
-src/agents/parsing.py
-Pulls a verdict out of the JSON a local judge model returns.
-
-gemma4:12b under format="json" produces structurally valid JSON that does not always
-match the requested shape. Observed in the wild:
-    {"status": "VALIDED", ...}                       - misspelled verdict
-    {"```json( { ": "status", "value": "VALIDATED"}   - key/value inversion
-The second parses cleanly, so decision.get("status") returns None and a VALIDATED run is
-read as REJECTED. These helpers look past the shape for the verdict itself.
-"""
+"""Helpers for reading a judge model's reply."""
 
 import json
 
@@ -16,28 +6,17 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 
 def prompt_messages(prompt: str, ask: str) -> list:
-    """Message list any agent prompt is sent as.
-
-    Gemini rejects a request whose only message is a SystemMessage with
-    "ValueError: contents are required", so instructions go in the system turn and a short
-    user turn asks for the output. Ollama is happy with the same shape, which keeps every
-    agent portable between the two providers.
-    """
+    """Wraps a prompt as a system turn plus a user turn."""
     return [SystemMessage(content=prompt), HumanMessage(content=ask)]
 
 
 def judge_messages(prompt: str) -> list:
-    """Message list for a judging prompt."""
+    """Wraps a judging prompt as messages."""
     return prompt_messages(prompt, "Give your verdict now.")
 
 
 def message_text(response) -> str:
-    """Returns a reply's text whatever shape the provider used.
-
-    Ollama sets .content to a string. Gemini sets it to a list of content blocks,
-    e.g. [{"type": "text", "text": "STATUS: PASS", "extras": {...}}], so reading
-    .content directly yields a list and every downstream parser breaks.
-    """
+    """Returns a reply's text, whether the provider sent a string or content blocks."""
     content = getattr(response, "content", response)
     if isinstance(content, str):
         return content
@@ -53,12 +32,7 @@ def message_text(response) -> str:
 
 
 def parse_verdict_lines(raw: str, options: tuple[str, ...], default: str) -> tuple[str, str]:
-    """Reads a `STATUS: X` / `FEEDBACK: ...` reply, returning (verdict, feedback).
-
-    Used instead of JSON because gemma4:12b under format="json" reliably answers with a
-    single {"thought": "..."} object and stops, never emitting the verdict - no wording
-    of the prompt prevented it. A line format has no grammar to degenerate into.
-    """
+    """Reads a `STATUS: X` / `FEEDBACK: ...` reply into (verdict, feedback)."""
     verdict, feedback, found = default, "", False
 
     for line in (raw or "").splitlines():
@@ -76,9 +50,7 @@ def parse_verdict_lines(raw: str, options: tuple[str, ...], default: str) -> tup
     if found:
         return verdict, feedback
 
-    # No STATUS line. Fall back to the first option named anywhere in the reply - but only
-    # scan the part before FEEDBACK, so wording like "cannot be validated" in an
-    # explanation cannot decide the verdict.
+    # No STATUS line: look for a verdict before the feedback text.
     head = (raw or "").upper().split("FEEDBACK", 1)[0]
     for option in options:
         if option[:4] in head:
@@ -88,7 +60,7 @@ def parse_verdict_lines(raw: str, options: tuple[str, ...], default: str) -> tup
 
 
 def judge_text(llm, messages) -> str:
-    """Single call returning the raw reply, or '' if the model produced nothing."""
+    """Calls a judge and returns its raw reply, or '' if the call failed."""
     try:
         return message_text(llm.invoke(messages))
     except Exception as e:
@@ -97,13 +69,7 @@ def judge_text(llm, messages) -> str:
 
 
 def judge_json(llm, messages, attempts: int = 2):
-    """Invokes a judge and returns parsed JSON, retrying once on malformed output.
-
-    A response that will not parse is the judge malfunctioning, not a verdict. Treating
-    it as one costs a whole revision loop (editor) or a research attempt (validator);
-    with a two-attempt budget a single hiccup could abort an otherwise healthy run.
-    Returns None when every attempt fails.
-    """
+    """Calls a judge and returns parsed JSON, retrying once, or None if it never parses."""
     for attempt in range(attempts):
         raw = ""
         try:
@@ -116,7 +82,7 @@ def judge_json(llm, messages, attempts: int = 2):
 
 
 def _verdict_candidates(decision) -> list[str]:
-    """Single-word strings from the payload, documented key first."""
+    """Collects the single-word strings from a payload, documented key first."""
     if not isinstance(decision, dict):
         return []
 
@@ -127,16 +93,11 @@ def _verdict_candidates(decision) -> list[str]:
     ordered.extend(v for v in decision.values() if isinstance(v, str))
     ordered.extend(k for k in decision.keys() if isinstance(k, str))
 
-    # A verdict is one word. Skipping longer strings keeps a feedback sentence such as
-    # "the data cannot be validated" from being mistaken for the verdict.
     return [s.strip() for s in ordered if len(s.split()) == 1]
 
 
 def extract_verdict(decision, options: tuple[str, ...], default: str) -> str:
-    """Returns whichever of `options` the payload names, else `default`.
-
-    Matching is on a prefix so near-misses ("VALIDED" for "VALIDATED") still resolve.
-    """
+    """Returns whichever option the payload names, matched on a prefix, else the default."""
     for candidate in _verdict_candidates(decision):
         upper = candidate.upper()
         for option in options:
@@ -146,7 +107,7 @@ def extract_verdict(decision, options: tuple[str, ...], default: str) -> str:
 
 
 def extract_feedback(decision, fallback: str = "") -> str:
-    """Returns the explanation: the documented key, else the longest sentence present."""
+    """Returns the payload's explanation: the documented key, else its longest sentence."""
     if not isinstance(decision, dict):
         return fallback
 

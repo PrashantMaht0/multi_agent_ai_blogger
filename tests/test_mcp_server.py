@@ -1,8 +1,4 @@
-"""
-tests/test_mcp_server.py
-MCP server tests over FastMCP's in-memory transport. The HTTP layer is mocked,
-so no Tavily credits are spent and no Google credentials are touched.
-"""
+"""MCP server tests over the in-memory transport, with the HTTP layer mocked."""
 
 import pytest
 from fastmcp import Client
@@ -67,7 +63,7 @@ async def test_search_tool_returns_error_string_on_failure(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_blogger_server_exposes_publish_tool():
-    """Tool discovery only - publishing would need real OAuth credentials."""
+    """Tool discovery only, since publishing needs real credentials."""
     async with Client(blogger_mcp) as client:
         tools = await client.list_tools()
 

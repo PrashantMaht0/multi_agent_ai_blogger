@@ -1,7 +1,4 @@
-"""
-src/agents/writer.py
-Content generation agent.
-"""
+"""Agent that turns validated research into an HTML draft."""
 
 from src.agents.parsing import message_text, prompt_messages
 from src.prompts import load_prompt
@@ -21,7 +18,6 @@ def writer_node(state: AgentState) -> dict:
     response = writer_llm.invoke(prompt_messages(prompt, "Write the blog post now."))
     
     return {
-        # message_text, not .content: Gemini returns a list of content blocks.
         "draft": message_text(response),
         "sender": "writer"
     }

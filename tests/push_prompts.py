@@ -1,13 +1,7 @@
-"""
-tests/push_prompts.py
-Publishes src/prompts/*.yaml to the LangSmith Prompt Hub, stamped with the git commit
-the prompt text came from.
+"""Publishes src/prompts/*.yaml to the LangSmith Prompt Hub, stamped with the git commit.
 
     python tests/push_prompts.py            # push all five
     python tests/push_prompts.py writer     # push one
-
-The YAML files stay the source of truth; the hub is the versioned record you can diff
-between eval sweeps. Not collected by pytest: the filename does not match test_*.py.
 """
 
 import argparse
@@ -37,7 +31,7 @@ def git_commit() -> str:
 def push(client: Client, name: str, commit: str) -> str:
     prompt = load_prompt(name)
 
-    # mustache, so the literal JSON braces inside these prompts are not treated as variables
+    # Mustache, so literal braces in a prompt are not read as variables.
     template = ChatPromptTemplate.from_template(prompt.template, template_format="mustache")
 
     url = client.push_prompt(

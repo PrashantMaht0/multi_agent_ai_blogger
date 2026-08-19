@@ -1,7 +1,4 @@
-"""
-tests/test_eval_harness.py
-Guards the evaluation harness without calling LangSmith, Gemini or Tavily.
-"""
+"""Guards the evaluation harness without calling LangSmith, Gemini or the web."""
 
 import json
 from pathlib import Path
@@ -25,14 +22,12 @@ NORMAL_REFERENCE = {
 
 
 def stub_judge(monkeypatch, payload):
-    """Replaces the Gemini call so no network request is made."""
+    """Replaces the judge call so no network request is made."""
     monkeypatch.setattr(harness, "_ask_judge", lambda _prompt: payload)
 
 
-# ------------------------------------------------------------------ dataset
-
 def test_dataset_is_capped_at_twenty_examples():
-    """One web search per example per sweep, and the budget is limited."""
+    """Each topic costs a web search credit, so the set stays small."""
     assert len(DATASET) == 20
 
 
@@ -52,10 +47,8 @@ def test_dataset_covers_both_injection_families():
     assert "code injection" in attacks
 
 
-# --------------------------------------------------------------- grouping
-
 def test_three_grouped_evaluators_cover_nine_metrics():
-    """Grouping keeps a sweep at 3 judge calls per example instead of one per metric."""
+    """Nine metrics come from three grouped judge calls."""
     assert len(harness.EVALUATORS) == 3
 
     metrics = harness.TRUST_KEYS + harness.EDITORIAL_KEYS + harness.STRUCTURE_KEYS
@@ -80,7 +73,7 @@ def test_trust_group_returns_every_metric(monkeypatch):
     assert scores["harmful_content"] == 1
     assert scores["security"] == 1
     assert scores["hallucination_free"] == 1
-    # correctness is reported as a fraction of the expected facts
+    # correctness is a fraction of the expected facts
     assert scores["correctness"] == pytest.approx(2 / 3)
 
 
@@ -109,8 +102,6 @@ def test_structure_group_returns_every_metric(monkeypatch):
     assert scores == {"structure": 1, "skimmability": 0}
 
 
-# ------------------------------------------------------------ edge cases
-
 def test_correctness_is_skipped_for_adversarial_examples(monkeypatch):
     stub_judge(monkeypatch, {"harmful_content": {"score": 1}, "security": {"score": 1},
                              "correctness": {"score": 3}, "hallucination_free": {"score": 1}})
@@ -121,7 +112,7 @@ def test_correctness_is_skipped_for_adversarial_examples(monkeypatch):
 
     correctness = next(r for r in results if r["key"] == "correctness")
     assert correctness["score"] is None
-    # the safety metrics still score on an adversarial row
+    # safety metrics still score on an adversarial row
     assert next(r for r in results if r["key"] == "security")["score"] == 1
 
 
@@ -140,7 +131,7 @@ def test_correctness_clamps_a_judge_that_overcounts(monkeypatch):
     ("structure_and_layout", harness.STRUCTURE_KEYS),
 ])
 def test_aborted_runs_are_skipped_not_scored(evaluator, keys, monkeypatch):
-    """An empty draft must not be graded, or a failed run reads as a passing one."""
+    """A run with no draft is skipped, not scored."""
     stub_judge(monkeypatch, {k: {"score": 1} for k in keys})
 
     results = getattr(harness, evaluator)(
@@ -159,7 +150,7 @@ def test_aborted_runs_are_skipped_not_scored(evaluator, keys, monkeypatch):
     ("structure_and_layout", harness.STRUCTURE_KEYS),
 ])
 def test_judge_failure_is_unscored_not_zero(evaluator, keys, monkeypatch):
-    """A broken judge must not look like a failing pipeline."""
+    """A broken judge scores nothing rather than zero."""
     stub_judge(monkeypatch, "Judge failed: RuntimeError: gemini unreachable")
 
     results = getattr(harness, evaluator)({"topic": "t"}, GOOD_OUTPUTS, NORMAL_REFERENCE)
@@ -169,7 +160,7 @@ def test_judge_failure_is_unscored_not_zero(evaluator, keys, monkeypatch):
 
 
 def test_missing_metric_is_unscored_rather_than_zero(monkeypatch):
-    """A judge that answers about two metrics must not silently fail the third."""
+    """A metric the judge omitted is unscored, not zero."""
     stub_judge(monkeypatch, {"structure": {"score": 1, "reason": "fine"}})
 
     scores = {r["key"]: r["score"]
@@ -180,8 +171,7 @@ def test_missing_metric_is_unscored_rather_than_zero(monkeypatch):
 
 
 def test_harness_sends_a_user_turn_to_the_judge():
-    """Regression: the harness sent a system-only message list and every Gemini judge
-    call failed with 'contents are required', scoring the whole sweep as unevaluated."""
+    """Judge prompts must carry a user turn, which Gemini requires."""
     import inspect
 
     from langchain_core.messages import HumanMessage
@@ -192,10 +182,7 @@ def test_harness_sends_a_user_turn_to_the_judge():
 
 
 def test_judge_prompts_do_not_anchor_scores_with_example_values():
-    """A literal score in the example JSON is copied by the judge instead of being
-    reasoned about. correctness and engagement showed "score": 0 in their examples and
-    scored ~0.00 across whole sweeps; de-anchoring moved them to 0.72 and 0.70 on
-    unchanged drafts."""
+    """A literal score in the example JSON gets copied instead of reasoned about."""
     import inspect
     import re
 

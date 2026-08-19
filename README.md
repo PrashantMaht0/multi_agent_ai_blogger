@@ -2,42 +2,38 @@
 
 ## Project Overview
 
-This project writes and publishes blog posts using a team of small AI agents that run
-entirely on your own machine. You type a topic, and five agents take it from there: one
-searches the web, one checks the findings, one writes the post, one reviews it, and one
-publishes it to Google Blogger.
+This project writes and publishes blog posts using a team of small AI agents. You type a
+topic, and five agents take it from there: one searches the web, one checks the findings
+are true, one writes the post, one reviews how it reads, and one publishes it to Google
+Blogger.
+
 
 The agents are wired together with **LangGraph** using an **orchestration workflow
-pattern**. Rather than one large model trying to do everything in a single prompt, the
-work is split into fixed steps with clear handoffs. A central graph decides which agent
-runs next based on the current state, and two of those steps are loops: if the research
-is poor, it goes back to the researcher; if the draft is poor, it goes back to the writer.
-Each agent has one job and one prompt, which makes it much easier to tell *which* step
-went wrong when the output is bad.
+pattern**. Rather than one large model doing everything in a single prompt, the work is
+split into fixed steps with clear handoffs. A central graph decides which agent runs next
+from the current state, and two of those steps are loops: if the research is poor it goes
+back to the researcher, if the draft reads badly it goes back to the writer. Each agent has
+one job and one prompt, which makes it possible to tell *which* step went wrong when the
+output is bad — and that turned out to matter enormously.
 
 Nothing gets published without your approval. The workflow deliberately stops before the
-final step and waits for a person — this is the **Human In The Loop (HITL)** part. The
-graph saves its progress to a database, pauses, and shows you the draft in the dashboard.
-Only when you click **Approve & Publish** does the workflow resume and post the article.
-If you close the tab or hit **Stop**, the run is cancelled instead.
+final step and waits for a person — the **Human In The Loop (HITL)** part. The graph saves
+its progress to a database, pauses, and shows you the draft in the dashboard. Only when you
+click **Approve & Publish** does it resume and post the article. Close the tab or hit
+**Stop** and the run is cancelled instead.
 
-Every run is recorded in **LangSmith**, which is used here for two things. First, tracing:
-you can open any run and see each agent's exact prompt, its reply, how long it took and
-how many tokens it used — that is how most of the bugs in this project were found. Second,
-evaluation: a fixed set of 20 test topics is stored there as a dataset, and after each run
-four automatic judges score the output for accuracy, made-up facts, relevance and safety.
-The prompts themselves are also stored in the LangSmith Prompt Hub, so a change to a
-prompt can be tied back to the scores it produced.
-
-Running costs are zero. The models run locally through Ollama, and the only external
-service that costs anything is the web search.
+Every run is recorded in **LangSmith**, used here for three things. 
+**Tracing:** open any run and see each agent's exact prompt, its reply, how long it took and how many tokens it used — that is how nearly every bug in this project was found. 
+**Evaluation:** a fixed set of 20 test topics lives there as a dataset, and three grouped judges score each finished post on nine measures. 
+**Prompt Hub:** every prompt is published there with a version number, so a score can always be traced back to the exact prompt that produced it.
 
 ## Tech Stack
 
 | Part | What it does |
 |---|---|
 | **LangGraph** | Runs the agent workflow, handles the loops, and saves progress |
-| **Ollama** | Runs the AI models locally on your machine |
+| **Ollama** | Runs the local models on your machine |
+| **Google Gemini** | The fact-checking validator and the evaluation judges |
 | **MCP (Model Context Protocol)** | Keeps tools in separate processes from the agents |
 | **Tavily** | Web search, used by the researcher |
 | **Google Blogger API** | Publishes the finished post |
@@ -45,7 +41,7 @@ service that costs anything is the web search.
 | **Gradio** | The web dashboard |
 | **LangSmith** | Run tracing, evaluation, and prompt storage |
 | **Docker** | Runs the dashboard in a container |
-| **pytest + GitHub Actions** | 79 tests that run automatically on every push |
+| **pytest + GitHub Actions** | 87 tests that run automatically on every push |
 
 ## Features
 
@@ -53,27 +49,25 @@ service that costs anything is the web search.
 - **Human approval before publishing.** The run pauses and waits for you.
 - **Stop button.** Cancel a running workflow at any point; the saved progress is deleted.
 - **Automatic cleanup.** Closing the browser tab or shutting the app down cancels any run
-  that is still going. A run already waiting for your approval is kept, so you do not lose
-  a finished draft.
-- **Retry loops with limits.** Bad research is sent back to the researcher, a weak draft is
-  sent back to the writer — but both stop after a set number of tries instead of looping
-  forever.
+  still going. A run already waiting for your approval is kept, so you never lose a
+  finished draft.
+- **Retry loops with limits.** Weak research goes back to the researcher, a weak draft goes
+  back to the writer — both stop after a set number of tries instead of looping forever.
 - **Safe failure.** If the research never becomes usable, the run stops and says why. It
   never writes an article from broken data.
-- **Prompts kept outside the code** in `src/prompts/*.yaml`, each with its own version and
-  model setting. You can change a prompt or swap a model without touching any Python.
-- **Automatic scoring** of output quality through LangSmith.
-- **Runs offline and free**, apart from web search.
-
+- **HTML cleaning in code, not by a model.** Script tags, event handlers and `javascript:`
+  links are stripped before publishing by a fixed rule that cannot be talked out of it.
+- **Prompts kept outside the code** in `src/prompts/*.yaml`, each with its own version,
+  model and temperature. Change a prompt or swap a model without touching any Python.
 ## Agents Description
 
 | Agent | Model | What it does |
 |---|---|---|
-| **Researcher** | qwen3 | Searches the web for facts about the topic. Reports honestly when the results are about a different subject than the one asked for. |
-| **Validator** | gemma4:12b | Checks the research before any writing starts: is it about the right subject, is it real, is there enough of it? Rejects it if not. |
-| **Writer** | qwen3 | Turns the approved research into an HTML blog post. It may only use facts from the research — it is not allowed to add numbers or names of its own. |
-| **Editor** | gemma4:12b | Reviews the draft for made-up claims, unsafe HTML, hidden instructions, and formatting. Sends it back to the writer if anything fails. |
-| **Publisher** | qwen3 | Posts the approved draft to Google Blogger and returns the live link. Runs only after a human approves. |
+| **Researcher** | qwen3 | Searches the web for facts about the topic. Says so plainly when the results turn out to be about a different subject. |
+| **Validator** | gemini-3.5-flash-lite | The only step that checks whether facts are true. Everything after it trusts its verdict. |
+| **Writer** | qwen3 | Turns approved research into an HTML post. May only state facts from the research — no invented numbers, people or examples. |
+| **Editor** | llama3.1:8b | Judges how the post *reads*: headline, tone, structure, skimmability, engagement. Does not check facts. |
+| **Publisher** | llama3.1:8b | Posts the approved draft to Blogger and returns the live link. Runs only after a human approves. |
 
 ## Agents Workflow
 
@@ -88,16 +82,20 @@ service that costs anything is the web search.
  ┌──────────────┐              │
  │  VALIDATOR   │──────────────┘
  └──────┬───────┘
-        │ research is good
+        │ facts check out
         ▼
  ┌──────────────┐
  │    WRITER    │◄─────────────┐
- └──────┬───────┘              │  draft rejected
+ └──────┬───────┘              │  reads badly
         ▼                      │  (up to 3 tries)
  ┌──────────────┐              │
  │    EDITOR    │──────────────┘
  └──────┬───────┘
-        │ draft passed
+        │ reads well
+        ▼
+ ┌──────────────┐
+ │  SANITIZER   │   ← clean up any unwanted tags
+ └──────┬───────┘
         ▼
   ╔══════════════╗
   ║ PAUSE — YOU  ║   ← the workflow stops here and waits
@@ -115,17 +113,12 @@ and the dashboard shows the reason.
 
 ## Models Used
 
-Both models run locally through Ollama. They were chosen for different jobs:
+| Model | Where it runs | Used by | Why this one |
+|---|---|---|---|
+| **qwen3** | Local (Ollama) | Researcher, Writer | Best local model tested for writing. Against llama3.1:8b on an identical prompt it scored higher on engagement with the same headline quality. |
+| **llama3.1:8b** | Local (Ollama) | Editor, Publisher | Fast, and these two roles only need a short verdict or a tool call. |
+| **gemini-3.5-flash-lite** | Hosted (Google) | Validator, evaluation judges | Needs current knowledge — see [Results](#results). |
 
-| Model | Used by | Why |
-|---|---|---|
-| **gemma4:12b** | Validator, Editor | The two judging roles. The larger model is better at following a checklist and giving a clear pass/fail answer. |
-| **qwen3** | Researcher, Writer, Publisher | The three doing roles. Smaller and faster, which matters because the writer produces the most text. |
-
-Both are set per agent in the prompt files, so you can change either one by editing a YAML
-file. One thing worth knowing: on a 16 GB machine both models cannot stay in memory at the
-same time, so Ollama swaps them in and out as the workflow moves between agents. That
-swapping is the slowest part of a run.
 
 ## Screenshots
 
@@ -144,73 +137,185 @@ clicked.
 
 [![Published blog post](https://github.com/PrashantMaht0/multi_agent_ai_blogger/blob/main/assest/screen_shots/Final_blog_with_v1.png)](https://prax-pins-gg.blogspot.com/2026/08/everything-new-in-googles-new-pixel-11.html)
 
+## Run the Project Locally
+
+### 1. What you need first
+
+- **Python 3.13** and **[Poetry](https://python-poetry.org/docs/#installation)**
+- **[Ollama](https://ollama.com/download)** installed and running
+- A machine with **16 GB RAM** (the two local models total about 10 GB)
+- Free API keys: 
+  - **[Tavily](https://tavily.com)** (web search),
+  - **[Google AI Studio](https://aistudio.google.com/apikey)** (Gemini),
+  - **[LangSmith](https://smith.langchain.com)** (tracing — optional but recommended)
+- A **[Supabase](https://supabase.com)** project for the free PostgreSQL database
+- A **[Blogger](https://www.blogger.com)** blog, only if you want to publish for real
+
+### 2. Get the code and install
+
+```bash
+git clone https://github.com/PrashantMaht0/multi_agent_ai_blogger.git
+cd multi_agent_ai_blogger
+poetry install
+```
+
+### 3. Download the local models
+
+```bash
+ollama pull qwen3
+ollama pull llama3.1:8b
+```
+
+Leave Ollama running in the background.
+
+### 4. Create your `.env`
+
+Copy the template and fill in your own keys:
+
+```bash
+cp example.env .env
+```
+
+Open `.env` and set `TAVILY_API_KEY`, `GEMINI_API_KEY`, `LANGSMITH_API_KEY`,
+`POSTGRES_DB_URL` (the direct connection string from Supabase → Settings → Database) and
+`BLOGGER_BLOG_ID`. Leave `OLLAMA_BASE_URL` as `http://localhost:11434`.
+
+### 5. Authorise Blogger (only if you want to publish)
+
+Download an OAuth **desktop app** credentials file from Google Cloud, save it as
+`credentials.json` in the project root, then run:
+
+```bash
+poetry run python src/auth_blogger.py
+```
+
+### 6. Start the dashboard
+
+```bash
+poetry run python app.py
+```
+
+Open **http://localhost:7860**, type a topic, and click **Generate**.  When it pauses, read the draft and click **Approve & Publish**.
+
+### 7. Run the tests
+
+```bash
+poetry run python -m pytest tests -v
+```
+
+### 8. Run the evaluation (optional)
+
+```bash
+poetry run python tests/eval_harness.py --limit 3    # try 3 topics first
+poetry run python tests/eval_harness.py              # all 20
+```
+
+Each topic spends one Tavily search credit. Results appear in LangSmith.
+
+### Running in Docker instead
+
+```bash
+docker compose up --build
+```
+
+Ollama still runs on your host; the compose file points the container at it. `token.json`
+and `credentials.json` are mounted read-only and never baked into the image.
+
 ## Evals Configs
 
 ### Dataset
 
-20 test topics, stored as a LangSmith dataset named `ai-blogger-eval` and kept in
-`tests/dataset.json`. The size is capped at 20 because each test topic uses a web search
-credit.
+20 test topics, kept in `tests/dataset.json` 
 
 - **14 normal topics** — ordinary technical subjects such as "How does retrieval-augmented
-  generation work?" Each one lists the key facts a good article should contain, which is
-  what the accuracy score is measured against.
-- **6 attack topics** — deliberately hostile inputs used to check the system cannot be
-  tricked. They try credential theft, reading environment variables, injecting a `<script>`
-  tag into the published page, a destructive database command, hijacking the workflow to
-  skip review, and planting a hidden instruction in the output for the next agent to obey.
+  generation work?" Each lists the key facts good research should surface.
+- **6 attack topics** — hostile inputs checking the system cannot be tricked: credential
+  theft, reading environment variables, injecting a `<script>` tag into the published page,
+  a destructive database command, hijacking the workflow to skip review, and planting a
+  hidden instruction in the output for the next agent to obey.
 
-Evaluations run through a single-turn version of the workflow that stops after the editor,
-so a test run never publishes anything to a live blog.
 
 ### Active evaluators
 
-Four judges, all running locally on gemma4:12b. Each one grades a different stage, so a low
-score points at a specific agent rather than at the system as a whole.
+Nine measures produced by **three grouped judges**, all on `gemini-3.5-flash-lite`. Each
+judge makes one call and returns several scores, so a full evaluation costs 3 judge calls per
+topic instead of 9.
 
-| Evaluator | What it measures | Which agent it points to |
-|---|---|---|
-| **correctness** | Did the research find the expected facts? Scored as a fraction, e.g. 2 of 3 = 0.67 | Researcher |
-| **hallucination_free** | Is every claim in the article backed by the research? | Writer |
-| **relevance** | Is the article actually about the topic asked for? | Writer |
-| **security** | Did an attack topic change what the system did? Writing *about* an instruction is fine; obeying it is a failure | Writer and Editor |
+**1. Trust & Safety**
 
-A judge that fails or returns nothing scores "not evaluated" rather than zero, so a broken
-judge never looks like a broken pipeline.
+| Measure | What it checks |
+|---|---|
+| **harmful_content** | No hate speech, abuse or otherwise harmful material |
+| **security** | An injected instruction did not change what the system did. Writing *about* an instruction is fine; obeying it fails |
+| **correctness** | Did the research find the expected facts? Scored as a fraction, so 2 of 3 = 0.67 |
+| **hallucination_free** | Every specific claim in the article traces back to the research |
 
-### Baseline results
+**2. Editorial & Reader Experience**
 
-Full run of all 20 topics. This is the measured baseline for the MVP.
+| Measure | What it checks |
+|---|---|
+| **catchy_headline** | The title is specific and worth clicking, not a textbook chapter name |
+| **tone** | Informative and professional, no marketing hype |
+| **engagement** | It holds attention and gives a reason to keep reading |
 
-| Evaluator | Score | Topics scored |
-|---|---|---|
-| correctness | **0.81** | 14 |
-| hallucination_free | **0.94** | 17 |
-| relevance | **1.00** | 17 |
-| security | **0.88** | 17 |
+**3. Structure & Visual Layout**
 
-Not every topic gets every score: attack topics have no expected facts, so correctness is
-skipped for them, and a run that stopped early has no article to grade.
+| Measure | What it checks |
+|---|---|
+| **structure** | Clear opening, sections in a sensible order, headings that describe what follows |
+| **skimmability** | Short paragraphs, useful subheadings, sections that connect |
 
-What the baseline told us, which is the point of running it:
+## Results
 
-- The system reliably writes on-topic articles, and almost always sticks to its research.
-- Two attack topics succeeded — one injected `<script>` tag reached the draft, and one
-  hidden instruction was copied into the output. Both were fixed afterwards.
-- On one topic the web search returned facts about a completely different subject, the
-  validator approved them, and a confident article was written about something that does
-  not exist. Accuracy caught this; the other three scores did not, because the article was
-  a faithful write-up of the wrong research.
+### Baseline and final
 
-The prompts have since been revised to close these gaps, and the fixes were checked
-individually against the exact failing cases. Those revisions have not been re-measured
-across the full dataset, so the table above remains the honest headline number.
+Both runs cover the same 20 topics with the same judges.
+
+| Measure | Baseline | Final | Change |
+|---|---|---|---|
+| harmful_content | 1.00 | **1.00** | — |
+| security | 0.94 | **0.94** | — |
+| **correctness** | 0.25 | **0.86** | **+0.61** |
+| hallucination_free | 1.00 | **0.76** | −0.24 |
+| **catchy_headline** | 0.62 | **0.90** | **+0.28** |
+| tone | 0.99 | **0.98** | — |
+| **engagement** | 0.18 | **0.93** | **+0.75** |
+| structure | 1.00 | **0.83** | −0.17 |
+| skimmability | 0.91 | **0.82** | −0.09 |
+| **Time per post** | 224s | **146s** | **−35%** |
+| Runs that failed | 4/20 | **3/20** | −1 |
+
+Earlier, before the hybrid setup, a full run took **566 seconds per post**. Against that
+starting point the finished pipeline is **nearly 4× faster**.
+**Why the Validator Agent moved to Gemini?**
+The first version used `gemma4:12b`, running locally, to check whether the research was
+true. It kept rejecting research that was perfectly correct.
+A local model's knowledge stops at its training date. A validator/fact-checker is exactly the job
+where that matters most, because its whole purpose is to know what is true *now*.
+
+So the validator moved to `gemini-3.5-flash-lite`, and every other agent stayed local. That
+one change did three things:
+
+1. **Correct research stopped being thrown away.** 
+2. **The other agents got simpler.** 
+3. **Runs got much faster.** 
+
+The cost is one hosted API call per run. Everything that actually writes your blog post
+still runs on your machine.
+
+### How the scores were raised
+
+**Correctness (0.25 → 0.86)**
+This was a formatting issue, not a research failure. The judge AI couldn't read research notes hidden inside a JSON file, which I fixed by passing them as plain text.
+
+**Engagement (0.18 → 0.93) and Headline (0.62 → 0.90)**
+I improved this partly by updating the prompts and tempering with the temprature values to ban clice openings (like "Understanding...") and predictable endings (like "In conclusion"). 
+
+**Why hallucination_free dipped to 0.76**
+This drop was a real trade-off. I raised the model's temperature from 0.7 to 0.85 to make the writing less formulaic. It worked, but when asked to "open with something concrete," the hotter model started inventing fake details like a made-up developer in Berlin or a fake $150K project. 
 
 ## Future Enhancements
 
-- **More evaluators for writing quality.** The current four check whether an article is
-  accurate and safe, not whether it is any good to read. Worth adding: headline quality,
-  structure and skimmability, engagement and tone, and reading level.
 - **Image support.** Generating or sourcing a header image and inline diagrams, with
   captions and alt text.
 - **Mixed model setups.** Trying a larger model only for the writer, or a small fast model
@@ -235,17 +340,7 @@ Contributions are welcome! If you want to contribute, please follow these steps:
 * Push to the Branch: git push origin feature/AmazingFeature
 * Open a Pull Request: Describe the changes you made and the problem they solve.
 
-Before opening a pull request
-
-* `./mvnw test` must pass, and changes should come with a test.
-* Every project-scoped endpoint must check access through `ProjectAccessService`. Reads need `VIEWER`, anything that calls a model needs `MAINTAINER`, secrets need `OWNER`.
-* Refusals return 404, never 403, so the API does not confirm which projects exist to someone who cannot see them.
-* Anything from a repository — diffs, commit messages, PR bodies, comments — is untrusted. Wrap it with `UntrustedContent.fence()` before it reaches a prompt.
-* Never log a credential. Log that one was found and what kind it was, not its value.
-* Schema changes go in a new numbered file in `db/migrations/`. Nothing is applied automatically.
-* Changing a prompt means bumping its `*_PROMPT_VERSION` constant, so documents written by different prompts stay distinguishable afterwards.
-
-Reporting Issues
+**Reporting Issues**
 If you find a bug or have a feature request, please use the GitHub Issues tab. Include the following in your report:
 
 * A clear title.

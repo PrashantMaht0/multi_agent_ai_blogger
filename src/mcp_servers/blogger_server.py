@@ -1,7 +1,4 @@
-"""
-src/mcp_servers/blogger_server.py
-An MCP server that publishes drafts to Google Blogger via OAuth 2.0.
-"""
+"""MCP server that publishes drafts to Google Blogger via OAuth 2.0."""
 
 import os
 from fastmcp import FastMCP
@@ -14,18 +11,17 @@ from dotenv import load_dotenv
 load_dotenv()
 mcp = FastMCP("Blogger Publisher")
 
-# If modifying these scopes, delete the file token.json.
+# Changing these scopes means deleting token.json.
 SCOPES = ['https://www.googleapis.com/auth/blogger']
 
 def get_blogger_service():
-    """Handles OAuth 2.0 authentication and token generation."""
+    """Returns an authenticated Blogger client, refreshing or requesting a token."""
     creds = None
-    
-    # The file token.json stores the user's access and refresh tokens.
+
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     
-    # If there are no valid credentials available, let the user log in.
+    # Refresh an expired token, or run the browser sign-in flow.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -33,7 +29,6 @@ def get_blogger_service():
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         
-        # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
             
@@ -41,10 +36,7 @@ def get_blogger_service():
 
 @mcp.tool()
 def publish_to_blogger(title: str, content: str, tags: list[str]) -> str:
-    """
-    Publishes a formatted HTML draft to Google Blogger.
-    Returns the live URL of the published post upon success.
-    """
+    """Publishes an HTML draft and returns the live URL."""
     try:
         service = get_blogger_service()
         blog_id = os.getenv("BLOGGER_BLOG_ID")

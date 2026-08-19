@@ -1,7 +1,4 @@
-"""
-tests/test_prompts.py
-Guards the decoupled prompt directory. No LLM calls.
-"""
+"""Guards the prompt directory, with no model calls."""
 
 import pytest
 import yaml
@@ -27,7 +24,7 @@ def test_prompt_declares_what_the_eval_workflow_needs(name):
 
 
 def test_render_substitutes_variables_and_leaves_json_braces_alone():
-    """Mustache is used precisely so literal JSON in a prompt needs no escaping."""
+    """Mustache markers leave literal braces in a prompt alone."""
     prompt = Prompt(
         name="t", version="0", model="m",
         template='Topic: {{topic}}\nReply as {"status": "PASS", "feedback": ""}',
@@ -59,7 +56,7 @@ def test_render_refuses_to_silently_drop_a_variable():
 
 
 def test_model_resolves_from_env_with_a_literal_fallback(monkeypatch):
-    """${VAR:default} - env wins, and the fallback keeps a model name's own colon."""
+    """An env var wins, and the fallback keeps a model name's own colon."""
     monkeypatch.setenv("WORKER_MODEL", "some-other-model")
     assert _resolve_model("${WORKER_MODEL:llama3:8b}") == "some-other-model"
 
@@ -78,8 +75,7 @@ def test_yaml_model_can_pin_a_model_for_an_ab_test(monkeypatch):
 
 
 def test_local_judge_disables_thinking_and_caps_output():
-    """A local thinking model spends a long prompt's whole generation reasoning and
-    returns empty content, and its json mode answers with a lone {"thought": ...}."""
+    """The local judge disables thinking and caps its output."""
     editor = load_prompt("editor")
 
     assert editor.reasoning is False
@@ -88,7 +84,7 @@ def test_local_judge_disables_thinking_and_caps_output():
 
 
 def test_validator_runs_on_a_hosted_model_with_current_knowledge():
-    """gemma4:12b rejected correct research about anything past its training cutoff."""
+    """Fact-checking needs a model with current knowledge."""
     validator = load_prompt("validator")
 
     assert validator.model.startswith("gemini")
@@ -96,7 +92,7 @@ def test_validator_runs_on_a_hosted_model_with_current_knowledge():
 
 
 def test_only_the_validator_is_hosted():
-    """Everything else stays local, so a run costs nothing but the web search."""
+    """Only the validator is hosted; every other agent runs locally."""
     hosted = [n for n in AGENTS if load_prompt(n).model.startswith("gemini")]
     assert hosted == ["validator"]
 

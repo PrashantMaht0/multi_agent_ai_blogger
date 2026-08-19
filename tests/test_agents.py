@@ -1,7 +1,4 @@
-"""
-tests/test_agents.py
-Per-agent unit tests. Every LLM and MCP call is mocked; no network, no .env, no credentials.
-"""
+"""Per-agent unit tests, with every model and MCP call mocked."""
 
 import pytest
 
@@ -11,8 +8,6 @@ import src.agents.researcher as researcher
 import src.agents.validator as validator
 import src.agents.writer as writer
 
-
-# ---------------------------------------------------------------- researcher
 
 def test_researcher_stores_findings_and_burns_an_attempt(monkeypatch):
     monkeypatch.setattr(researcher, "_run_research_agent", lambda topic: topic)
@@ -26,7 +21,7 @@ def test_researcher_stores_findings_and_burns_an_attempt(monkeypatch):
 
 
 def test_researcher_reports_the_root_cause_not_the_taskgroup_wrapper(monkeypatch):
-    """anyio's ExceptionGroup always stringifies to the same useless sentence."""
+    """The reported error is the leaf cause, not the task-group wrapper."""
     def boom(_coro):
         raise ExceptionGroup(
             "unhandled errors in a TaskGroup",
@@ -44,7 +39,7 @@ def test_researcher_reports_the_root_cause_not_the_taskgroup_wrapper(monkeypatch
 
 
 def test_researcher_keeps_failures_out_of_research_notes(monkeypatch):
-    """Regression: the error string used to be appended as if it were research."""
+    """A failed search must not land in research_notes."""
     def boom(_coro):
         raise RuntimeError("unhandled errors in a TaskGroup")
 
@@ -59,8 +54,7 @@ def test_researcher_keeps_failures_out_of_research_notes(monkeypatch):
 
 
 def test_llm_is_built_per_call_not_at_import():
-    """Regression: a module-level ChatOllama caches an httpx client bound to the first
-    event loop, so the second asyncio.run() died with 'Event loop is closed'."""
+    """A module-level client would outlive the loop asyncio.run() closes."""
     assert not hasattr(researcher, "llm")
     assert not hasattr(publisher, "llm")
 
@@ -75,8 +69,6 @@ def test_researcher_skips_search_once_research_is_validated(monkeypatch):
     assert researcher.researcher_node(state) == {"sender": "researcher"}
 
 
-# ----------------------------------------------------------------- validator
-
 def test_validator_returns_verdict_and_feedback(monkeypatch, fake_llm):
     llm = fake_llm("STATUS: VALIDATED\nFEEDBACK: solid sources")
     monkeypatch.setattr(validator, "validator_llm", llm)
@@ -89,7 +81,7 @@ def test_validator_returns_verdict_and_feedback(monkeypatch, fake_llm):
 
 
 def test_validator_reads_a_misspelled_verdict(monkeypatch, fake_llm):
-    """gemma4:12b has emitted VALIDED; prefix matching keeps the run alive."""
+    """A misspelled verdict still resolves."""
     monkeypatch.setattr(validator, "validator_llm", fake_llm("STATUS: VALIDED\nFEEDBACK: fine"))
 
     result = validator.validator_node({"topic": "MCP", "research_notes": ["a fact"]})
@@ -98,7 +90,7 @@ def test_validator_reads_a_misspelled_verdict(monkeypatch, fake_llm):
 
 
 def test_validator_does_not_read_a_verdict_out_of_prose(monkeypatch, fake_llm):
-    """'cannot be validated' in the feedback must not flip the verdict."""
+    """Wording in the feedback must not flip the verdict."""
     reply = "STATUS: REJECTED\nFEEDBACK: The data cannot be validated against the topic."
     monkeypatch.setattr(validator, "validator_llm", fake_llm(reply))
 
@@ -108,8 +100,7 @@ def test_validator_does_not_read_a_verdict_out_of_prose(monkeypatch, fake_llm):
 
 
 def test_validator_passes_research_through_when_the_judge_says_nothing(monkeypatch, fake_llm):
-    """A thinking model returns empty content on a long prompt. Silence is not a
-    rejection: treating it as one burned research attempts and aborted healthy runs."""
+    """Silence from the judge is not a rejection."""
     monkeypatch.setattr(validator, "validator_llm", fake_llm(""))
 
     result = validator.validator_node({"topic": "MCP", "research_notes": ["a fact"]})
@@ -128,8 +119,6 @@ def test_validator_surfaces_research_error_in_prompt(monkeypatch, fake_llm):
     assert "search died" in llm.prompts[0]
 
 
-# -------------------------------------------------------------------- writer
-
 def test_writer_drafts_from_research_and_feedback(monkeypatch, fake_llm):
     llm = fake_llm("<h2>Draft</h2>")
     monkeypatch.setattr(writer, "writer_llm", llm)
@@ -146,8 +135,6 @@ def test_writer_drafts_from_research_and_feedback(monkeypatch, fake_llm):
     assert "fact A" in prompt and "fact B" in prompt and "add more detail" in prompt
 
 
-# -------------------------------------------------------------------- editor
-
 def test_editor_pass_increments_revision_count(monkeypatch, fake_llm):
     monkeypatch.setattr(editor, "editor_llm", fake_llm('{"status": "PASS", "feedback": ""}'))
 
@@ -160,8 +147,7 @@ def test_editor_pass_increments_revision_count(monkeypatch, fake_llm):
 
 
 def test_editor_passes_draft_through_when_the_judge_says_nothing(monkeypatch, fake_llm):
-    """Failing on silence forced a redraft plus another review - the largest latency cost
-    in the v1.1 sweep. A human still reviews before publishing."""
+    """Silence from the judge is not a verdict on the draft."""
     monkeypatch.setattr(editor, "editor_llm", fake_llm(""))
 
     result = editor.editor_node({
@@ -185,8 +171,6 @@ def test_editor_reads_the_line_contract(monkeypatch, fake_llm):
     assert result["feedback"] == "a script tag near the end"
     assert result["revision_count"] == 2
 
-
-# ----------------------------------------------------------------- publisher
 
 def test_publisher_returns_live_url(monkeypatch):
     monkeypatch.setattr(publisher, "_publish_via_mcp", lambda title, draft: (title, draft))

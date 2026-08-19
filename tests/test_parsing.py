@@ -1,7 +1,4 @@
-"""
-tests/test_parsing.py
-Verdict extraction from judge replies. Every case here was observed from live gemma4:12b.
-"""
+"""Verdict extraction from judge replies."""
 
 import pytest
 
@@ -19,13 +16,13 @@ def test_reads_the_two_line_contract():
 
 
 def test_prefix_match_survives_a_misspelled_verdict():
-    """Observed: the model wrote VALIDED, which once spun the researcher loop forever."""
+    """A misspelled verdict still resolves."""
     verdict, _ = parse_verdict_lines("STATUS: VALIDED\nFEEDBACK: fine", VERDICTS, "REJECTED")
     assert verdict == "VALIDATED"
 
 
 def test_feedback_wording_cannot_flip_the_verdict():
-    """'cannot be validated' inside the explanation must not read as VALIDATED."""
+    """Wording in the feedback must not flip the verdict."""
     reply = "STATUS: REJECTED\nFEEDBACK: The data cannot be validated against the topic."
     verdict, _ = parse_verdict_lines(reply, VERDICTS, "REJECTED")
     assert verdict == "REJECTED"
@@ -60,8 +57,7 @@ def test_empty_reply_uses_the_default(raw):
 
 
 def test_judge_messages_include_a_user_turn():
-    """Gemini rejects a system-only request with 'ValueError: contents are required',
-    which silently turned every judge call into a failure."""
+    """Judge prompts carry a user turn, which Gemini requires."""
     from langchain_core.messages import HumanMessage, SystemMessage
 
     from src.agents.parsing import judge_messages

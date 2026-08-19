@@ -1,14 +1,11 @@
-"""
-src/agents/validator.py
-Agent responsible for validating sources and factual consistency from researcher.py.
-"""
+"""Agent that fact-checks the researcher's findings before any writing starts."""
 
 import json
 from src.agents.parsing import judge_messages, judge_text, parse_verdict_lines
 from src.prompts import load_prompt
 from src.state import AgentState
 
-# Hosted model: it is the only node that checks facts, and it needs current knowledge
+# Hosted model: this is the only node that checks facts, so it needs current knowledge.
 prompt_spec = load_prompt("validator")
 validator_llm = prompt_spec.llm()
 
@@ -28,8 +25,7 @@ def validator_node(state: AgentState) -> dict:
     try:
         raw = judge_text(validator_llm, judge_messages(prompt))
         if not raw.strip():
-            # Silence is not a rejection. Treating it as one burned research attempts and
-            # aborted healthy runs; the editor is still downstream.
+            # Silence is not a rejection; let the research through.
             print("Validator returned nothing; passing research through.")
             return {
                 "validation_status": "VALIDATED",

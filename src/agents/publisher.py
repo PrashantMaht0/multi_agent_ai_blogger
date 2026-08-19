@@ -1,14 +1,11 @@
-"""
-src/agents/publisher.py
-Tool-calling agent connecting to the Blogger MCP Server.
-"""
+"""Tool-calling agent connecting to the Blogger MCP Server."""
 
 import sys
 import uuid
 import asyncio
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.memory import MemorySaver  # <-- Add this import
+from langgraph.checkpoint.memory import MemorySaver
 from src.agents.errors import root_cause
 from src.prompts import load_prompt
 from src.state import AgentState
@@ -24,8 +21,7 @@ mcp_config = {
 }
 
 async def _publish_via_mcp(title: str, draft_html: str) -> str:
-    # Per call, for the same reason as the researcher: an AsyncClient must not outlive
-    # the event loop asyncio.run() created for it.
+    # Built per call: an AsyncClient must not outlive the loop asyncio.run() created.
     llm = prompt_spec.llm()
     client = MultiServerMCPClient(mcp_config)
     async with client.session("blogger_server") as session:
@@ -33,7 +29,7 @@ async def _publish_via_mcp(title: str, draft_html: str) -> str:
 
         system_prompt = prompt_spec.render()
 
-        # Override checkpointer inheritance with an isolated MemorySaver
+        # Isolate this agent from the outer graph's checkpointer.
         agent = create_react_agent(
             llm, 
             tools, 
@@ -48,7 +44,6 @@ async def _publish_via_mcp(title: str, draft_html: str) -> str:
         
         return result["messages"][-1].content
 
-# ... (Keep the rest of your publisher_node exactly the same) ...
 def publisher_node(state: AgentState) -> dict:
     topic = state["topic"]
     final_draft = state["draft"]
