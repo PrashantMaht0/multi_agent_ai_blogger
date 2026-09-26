@@ -118,3 +118,15 @@ def test_research_notes_replace_rather_than_accumulate():
     channel.update([["first pass"]])
     channel.update([["second pass"]])
     assert channel.get() == ["second pass"]
+
+
+def test_sanitizer_pins_the_reviewed_draft_and_cleans_the_title():
+    """The hash the publisher checks is taken from the draft shown for review."""
+    from src.agents.publisher import content_hash
+    from src.orchestrator.graph import sanitizer_node
+
+    result = sanitizer_node({"topic": "RAM <script>x</script>prices", "draft": "<p>ok</p><img src=x>"})
+
+    assert result["draft"] == "<p>ok</p>"
+    assert result["approved_sha256"] == content_hash("<p>ok</p>")
+    assert result["title"] == "RAM prices"

@@ -6,12 +6,12 @@ from langgraph.checkpoint.postgres import PostgresSaver
 from psycopg_pool import ConnectionPool  
 
 from src.state import AgentState
-from src.agents.editor import editor_node
-from src.agents.sanitize import sanitize_html
+from src.agents.editor import MAX_REVISIONS, editor_node
+from src.agents.sanitize import clean_title, sanitize_html
 from src.agents.researcher import researcher_node
 from src.agents.validator import validator_node
 from src.agents.writer import writer_node
-from src.agents.publisher import publisher_node
+from src.agents.publisher import content_hash, publisher_node
 
 
 # Two passes: a third search rarely finds what the first two missed.
@@ -33,7 +33,7 @@ def validation_router(state: AgentState):
 
 
 def editor_router(state: AgentState):
-    if state.get("revision_count", 0) >= 3 or state.get("last_evaluation") == "PASS":
+    if state.get("revision_count", 0) >= MAX_REVISIONS or state.get("last_evaluation") == "PASS":
         return "publisher"
     return "writer"
 
@@ -43,7 +43,9 @@ def sanitizer_node(state: AgentState) -> dict:
     cleaned, removed = sanitize_html(state.get("draft", ""))
     if removed:
         print(f"Sanitizer removed: {', '.join(removed)}")
-    return {"draft": cleaned, "sanitizer_removed": removed, "sender": "sanitizer"}
+    # The hash pins the exact draft the human reviews; the publisher checks it.
+    return {"draft": cleaned, "title": clean_title(state["topic"]), "approved_sha256": content_hash(cleaned),
+            "sanitizer_removed": removed, "sender": "sanitizer"}
 
 
 def abort_node(state: AgentState) -> dict:

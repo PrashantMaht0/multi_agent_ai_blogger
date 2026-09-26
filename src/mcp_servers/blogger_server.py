@@ -1,5 +1,7 @@
 """MCP server that publishes drafts to Google Blogger via OAuth 2.0."""
 
+import hashlib
+import json
 import os
 from fastmcp import FastMCP
 from google.oauth2.credentials import Credentials
@@ -35,25 +37,27 @@ def get_blogger_service():
     return build('blogger', 'v3', credentials=creds)
 
 @mcp.tool()
-def publish_to_blogger(title: str, content: str, tags: list[str]) -> str:
-    """Publishes an HTML draft and returns the live URL."""
+def publish_to_blogger(title: str, content: str, tags: list[str] | None = None) -> str:
+    """Publishes an HTML draft and returns JSON with the live URL and a hash of what was sent."""
     try:
         service = get_blogger_service()
         blog_id = os.getenv("BLOGGER_BLOG_ID")
-        
+
         body = {
             "title": title,
             "content": content,
-            "labels": tags
+            "labels": tags or []
         }
-        
-        posts = service.posts()
-        result = posts.insert(blogId=blog_id, body=body, isDraft=False).execute()
-        
-        return f"Successfully published to Blogger. Live URL: {result.get('url')}"
-        
+
+        result = service.posts().insert(blogId=blog_id, body=body, isDraft=False).execute()
+
+        return json.dumps({
+            "url": result.get("url"),
+            "content_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+        })
+
     except Exception as e:
-        return f"Error publishing to Blogger: {str(e)}"
+        return json.dumps({"error": str(e)})
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")

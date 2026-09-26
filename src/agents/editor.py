@@ -5,6 +5,8 @@ from src.prompts import load_prompt
 from src.state import AgentState
 
 prompt_spec = load_prompt("editor")
+# Revisions before the draft goes to human review regardless.
+MAX_REVISIONS = 3
 editor_llm = prompt_spec.llm()
 
 def editor_node(state: AgentState) -> dict:
@@ -24,10 +26,13 @@ def editor_node(state: AgentState) -> dict:
 
     evaluation, feedback = parse_verdict_lines(raw, ("PASS", "FAIL"), default="FAIL")
     print(f"Editor Result: {evaluation} - {feedback}")
+    revision_count = state.get("revision_count", 0) + 1
 
     return {
         "feedback": feedback,
-        "revision_count": state.get("revision_count", 0) + 1,
+        "revision_count": revision_count,
         "last_evaluation": evaluation,
+        # Out of revisions and still failing: flag it for the human instead of hiding it.
+        "review_flag": "NEEDS_REVIEW" if evaluation == "FAIL" and revision_count >= MAX_REVISIONS else None,
         "sender": "editor"
     }

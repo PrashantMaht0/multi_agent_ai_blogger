@@ -1,16 +1,12 @@
-"""Tool-calling agent connecting to the Blogger MCP Server."""
+"""Publishes the approved draft through the Blogger MCP tool, with no model in the path."""
 
 import sys
-import uuid
+import json
+import hashlib
 import asyncio
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.memory import MemorySaver
 from src.agents.errors import root_cause
-from src.prompts import load_prompt
 from src.state import AgentState
-
-prompt_spec = load_prompt("publisher")
 
 mcp_config = {
     "blogger_server": {
@@ -20,38 +16,40 @@ mcp_config = {
     }
 }
 
-async def _publish_via_mcp(title: str, draft_html: str) -> str:
-    # Built per call: an AsyncClient must not outlive the loop asyncio.run() created.
-    llm = prompt_spec.llm()
+
+def content_hash(html: str) -> str:
+    return hashlib.sha256(html.encode("utf-8")).hexdigest()
+
+
+async def _publish_via_mcp(title: str, draft_html: str) -> dict:
     client = MultiServerMCPClient(mcp_config)
     async with client.session("blogger_server") as session:
-        tools = await client.get_tools()
+        result = await session.call_tool("publish_to_blogger", {"title": title, "content": draft_html})
+    return json.loads(result.content[0].text)
 
-        system_prompt = prompt_spec.render()
-
-        # Isolate this agent from the outer graph's checkpointer.
-        agent = create_react_agent(
-            llm, 
-            tools, 
-            prompt=system_prompt, 
-            checkpointer=MemorySaver()
-        )
-        
-        temp_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
-        prompt_text = f"Title: {title}\nContent: {draft_html}"
-        
-        result = await agent.ainvoke({"messages": [("user", prompt_text)]}, config=temp_config)
-        
-        return result["messages"][-1].content
 
 def publisher_node(state: AgentState) -> dict:
-    topic = state["topic"]
-    final_draft = state["draft"]
-    
-    print(f"🌐 Publishing '{topic}' to Blogger...")
+    draft = state["draft"]
+    title = state["title"]
+
+    # Refuse if the draft changed after the sanitizer approved it for review.
+    if content_hash(draft) != state.get("approved_sha256"):
+        print("Publisher refused: draft differs from the reviewed version.")
+        return {"blogger_url": "Failed to publish: draft changed after review.", "sender": "publisher"}
+
+    print(f"🌐 Publishing '{title}' to Blogger...")
     try:
-        live_url = asyncio.run(_publish_via_mcp(topic, final_draft))
-        return {"blogger_url": live_url, "sender": "publisher"}
+        reply = asyncio.run(_publish_via_mcp(title, draft))
     except Exception as e:
         print(f"Error calling Publisher MCP Tool: {root_cause(e)}")
         return {"blogger_url": "Failed to publish.", "sender": "publisher"}
+
+    if reply.get("error") or not reply.get("url"):
+        return {"blogger_url": f"Failed to publish: {reply.get('error', 'no URL returned')}", "sender": "publisher"}
+
+    # The server hashes what it received, so any change in transit is caught.
+    if reply.get("content_sha256") != content_hash(draft):
+        return {"blogger_url": f"Published, but the posted content differs from the approved draft: {reply['url']}",
+                "sender": "publisher"}
+
+    return {"blogger_url": reply["url"], "sender": "publisher"}

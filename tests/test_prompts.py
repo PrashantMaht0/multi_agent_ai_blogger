@@ -5,7 +5,7 @@ import yaml
 
 from src.prompts import PROMPTS_DIR, Prompt, _resolve_model, load_prompt
 
-AGENTS = ["researcher", "validator", "writer", "editor", "publisher"]
+AGENTS = ["researcher", "validator", "writer", "editor"]
 
 
 @pytest.mark.parametrize("name", AGENTS)
@@ -97,15 +97,22 @@ def test_only_the_validator_is_hosted():
     assert hosted == ["validator"]
 
 
+def test_publisher_has_no_prompt_or_model():
+    """Publishing is a deterministic tool call, so no model can alter the approved draft."""
+    import src.agents.publisher as publisher
+
+    assert not (PROMPTS_DIR / "publisher.yaml").exists()
+    assert not hasattr(publisher, "prompt_spec")
+
+
 def test_each_agent_loads_only_its_own_prompt():
     import src.agents.editor as editor
-    import src.agents.publisher as publisher
     import src.agents.researcher as researcher
     import src.agents.validator as validator
     import src.agents.writer as writer
 
     for module, name in [(researcher, "researcher"), (validator, "validator"), (writer, "writer"),
-                         (editor, "editor"), (publisher, "publisher")]:
+                         (editor, "editor")]:
         assert module.prompt_spec.name == name
 
 

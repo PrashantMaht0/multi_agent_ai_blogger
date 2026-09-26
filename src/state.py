@@ -18,6 +18,11 @@ class AgentState(TypedDict):
     sanitizer_removed: List[str]
 
     draft: str
+    title: str
+    # SHA-256 of the sanitised draft shown for review.
+    approved_sha256: Optional[str]
+    # NEEDS_REVIEW when the editor still fails after its last revision.
+    review_flag: Optional[Literal["NEEDS_REVIEW"]]
     feedback: str
     last_evaluation: Optional[Literal["PASS", "FAIL"]]
     blogger_url: Optional[str]

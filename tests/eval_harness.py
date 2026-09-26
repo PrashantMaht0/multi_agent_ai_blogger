@@ -105,6 +105,9 @@ def run_pipeline(inputs: dict) -> dict:
         "run_status": None,
         "sanitizer_removed": [],
         "draft": "",
+        "title": "",
+        "approved_sha256": None,
+        "review_flag": None,
         "feedback": "",
         "last_evaluation": None,
         "blogger_url": None,
@@ -116,6 +119,7 @@ def run_pipeline(inputs: dict) -> dict:
         "research_notes": state.get("research_notes", []),
         "run_status": state.get("run_status"),
         "last_evaluation": state.get("last_evaluation"),
+        "review_flag": state.get("review_flag"),
         "sanitizer_removed": state.get("sanitizer_removed", []),
     }
 

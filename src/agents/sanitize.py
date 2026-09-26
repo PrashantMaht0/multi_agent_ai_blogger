@@ -1,22 +1,17 @@
 """Strips unsafe markup from a draft before it can be published."""
 
+import html
 import re
 
-_DANGEROUS_BLOCKS = ("script", "iframe", "object", "embed", "style", "form", "svg")
-_DANGEROUS_VOID = ("img", "input", "link", "meta", "base")
+import nh3
 
-_BLOCK_PATTERN = re.compile(
-    r"<\s*(%s)\b[^>]*>.*?<\s*/\s*\1\s*>" % "|".join(_DANGEROUS_BLOCKS),
-    re.IGNORECASE | re.DOTALL,
-)
-_ORPHAN_TAG_PATTERN = re.compile(
-    r"<\s*/?\s*(%s)\b[^>]*>" % "|".join(_DANGEROUS_BLOCKS + _DANGEROUS_VOID),
-    re.IGNORECASE,
-)
-_EVENT_HANDLER_PATTERN = re.compile(r"\son[a-z]+\s*=\s*(\"[^\"]*\"|'[^']*'|[^\s>]+)", re.IGNORECASE)
-_JS_URL_PATTERN = re.compile(r"(href|src)\s*=\s*(\"|')?\s*javascript:[^\"'>\s]*(\"|')?", re.IGNORECASE)
+# The writer's own allowlist; anything else is removed.
+ALLOWED_TAGS = {"h2", "h3", "p", "strong", "em", "ul", "ol", "li", "code", "pre"}
+
+_TAG_NAME_PATTERN = re.compile(r"<\s*/?\s*([a-zA-Z][\w:-]*)")
 _PREAMBLE_PATTERN = re.compile(r"^[^<]*?(?=<\s*[a-zA-Z])", re.DOTALL)
 _TRAILING_FENCE_PATTERN = re.compile(r"```\s*$")
+MAX_TITLE_LENGTH = 150
 
 
 def sanitize_html(draft: str) -> tuple[str, list[str]]:
@@ -33,20 +28,21 @@ def sanitize_html(draft: str) -> tuple[str, list[str]]:
         removed.append(f"preamble before the first tag ({stripped_preamble.group().strip()[:40]!r})")
         cleaned = cleaned[stripped_preamble.end():]
 
-    cleaned, count = _BLOCK_PATTERN.subn("", cleaned)
-    if count:
-        removed.append(f"{count} script/iframe/style block(s)")
+    disallowed = {t.lower() for t in _TAG_NAME_PATTERN.findall(cleaned)} - ALLOWED_TAGS
 
-    cleaned, count = _ORPHAN_TAG_PATTERN.subn("", cleaned)
-    if count:
-        removed.append(f"{count} unsafe tag(s)")
+    # Allowlist parse: only the listed tags survive, and no attributes at all.
+    safe = nh3.clean(cleaned, tags=ALLOWED_TAGS, attributes={}, link_rel=None)
 
-    cleaned, count = _EVENT_HANDLER_PATTERN.subn("", cleaned)
-    if count:
-        removed.append(f"{count} inline event handler(s)")
+    if disallowed:
+        removed.append(f"disallowed tag(s): {', '.join(sorted(disallowed))}")
+    elif safe != cleaned:
+        removed.append("attributes or malformed markup")
 
-    cleaned, count = _JS_URL_PATTERN.subn("", cleaned)
-    if count:
-        removed.append(f"{count} javascript: URL(s)")
+    return safe, removed
 
-    return cleaned, removed
+
+def clean_title(topic: str) -> str:
+    """Turns the raw topic into a plain-text post title with no markup."""
+    text = html.unescape(nh3.clean(topic, tags=set()))
+    text = re.sub(r"\s+", " ", text.replace("<", "").replace(">", "")).strip()
+    return text[:MAX_TITLE_LENGTH]

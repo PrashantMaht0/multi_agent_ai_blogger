@@ -130,6 +130,9 @@ def start_generation(topic: str, request: gr.Request):
         "run_status": None,
         "sanitizer_removed": [],
         "draft": "",
+        "title": "",
+        "approved_sha256": None,
+        "review_flag": None,
         "feedback": "",
         "last_evaluation": None,
         "blogger_url": None,
@@ -199,11 +202,16 @@ def start_generation(topic: str, request: gr.Request):
         final_state = state_snapshot.values
 
         if state_snapshot.next and "publisher" in state_snapshot.next:
-            logs += "[PAUSED] Draft approved by Editor. Awaiting human review.\n"
             _paused_threads.add(thread_id)
             paused = (gr.update(interactive=False), gr.update(interactive=False),
                       gr.update(interactive=True), gr.update(interactive=True))
-            yield logs, current_draft, latest_feedback, "Ready for human review.", *paused, thread_id
+            if final_state.get("review_flag") == "NEEDS_REVIEW":
+                logs += "[PAUSED] NEEDS REVIEW: the editor still failed this draft after its last revision.\n"
+                status = f"NEEDS REVIEW - editor still failing: {latest_feedback}"
+            else:
+                logs += "[PAUSED] Draft approved by Editor. Awaiting human review.\n"
+                status = "Ready for human review."
+            yield logs, current_draft, latest_feedback, status, *paused, thread_id
             return
 
         terminal = (gr.update(interactive=False), gr.update(interactive=False),
@@ -241,7 +249,7 @@ def approve_and_publish(thread_id: str, existing_logs: str):
         return
 
     config = {"configurable": {"thread_id": thread_id}}
-    logs = existing_logs + "\n[RESUMING] Human approved. Triggering Publisher Agent...\n"
+    logs = existing_logs + "\n[RESUMING] Human approved. Publishing...\n"
     blogger_url = ""
 
     snapshot = app_graph.get_state(config)
@@ -299,7 +307,7 @@ with gr.Blocks(title="AI Blogger - Multi-Agent Studio") as demo:
     gr.Markdown(
         """
         # Multi-Agent Blogger Studio
-        **LangGraph Orchestration** with gemma4 (Editor & Validator) & qwen3 (Researcher, Writer, Publisher).
+        **LangGraph Orchestration** with qwen3 (Researcher, Writer), llama3.1:8b (Editor) & Gemini (Validator).
         """
     )
 
