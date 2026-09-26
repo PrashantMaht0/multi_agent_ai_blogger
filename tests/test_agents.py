@@ -10,7 +10,7 @@ import src.agents.writer as writer
 
 
 def test_researcher_stores_findings_and_burns_an_attempt(monkeypatch):
-    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic: topic)
+    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic, note="": topic)
     monkeypatch.setattr(researcher.asyncio, "run", lambda _coro: "- fact one")
 
     result = researcher.researcher_node({"topic": "MCP", "research_notes": []})
@@ -29,7 +29,7 @@ def test_researcher_reports_the_root_cause_not_the_taskgroup_wrapper(monkeypatch
                             [ConnectionError("nodename nor servname provided")])],
         )
 
-    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic: topic)
+    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic, note="": topic)
     monkeypatch.setattr(researcher.asyncio, "run", boom)
 
     result = researcher.researcher_node({"topic": "MCP", "research_notes": []})
@@ -43,7 +43,7 @@ def test_researcher_keeps_failures_out_of_research_notes(monkeypatch):
     def boom(_coro):
         raise RuntimeError("unhandled errors in a TaskGroup")
 
-    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic: topic)
+    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic, note="": topic)
     monkeypatch.setattr(researcher.asyncio, "run", boom)
 
     result = researcher.researcher_node({"topic": "MCP", "research_notes": []})
@@ -267,3 +267,35 @@ def test_editor_pass_on_the_last_revision_is_not_flagged(monkeypatch, fake_llm):
                                  "revision_count": editor.MAX_REVISIONS - 1})
 
     assert result["review_flag"] is None
+
+
+def test_researcher_retry_carries_the_validators_reason(monkeypatch):
+    """A retry is told why the last research was rejected."""
+    seen = {}
+
+    def capture(topic, note=""):
+        seen["note"] = note
+
+    monkeypatch.setattr(researcher, "_run_research_agent", capture)
+    monkeypatch.setattr(researcher.asyncio, "run", lambda _coro: "- better facts")
+
+    researcher.researcher_node({"topic": "MCP", "research_notes": ["old"], "research_attempts": 1,
+                                "validation_status": "REJECTED",
+                                "validation_feedback": "Results describe a different protocol."})
+
+    assert "Results describe a different protocol." in seen["note"]
+
+
+def test_first_research_pass_has_no_retry_note(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic, note="": seen.update(note=note))
+    monkeypatch.setattr(researcher.asyncio, "run", lambda _coro: "- facts")
+
+    researcher.researcher_node({"topic": "MCP", "research_notes": []})
+
+    assert seen["note"] == ""
+
+
+def test_researcher_prompt_renders_the_retry_note():
+    rendered = researcher.prompt_spec.render(retry_note="PREVIOUS ATTEMPT REJECTED")
+    assert rendered.rstrip().endswith("PREVIOUS ATTEMPT REJECTED")

@@ -97,7 +97,7 @@ def test_researcher_burns_an_attempt_on_any_unaccepted_verdict(monkeypatch):
     """Every researcher pass spends an attempt."""
     import src.agents.researcher as researcher
 
-    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic: topic)
+    monkeypatch.setattr(researcher, "_run_research_agent", lambda topic, note="": topic)
     monkeypatch.setattr(researcher.asyncio, "run", lambda _coro: "fresh findings")
 
     state = {"topic": "t", "research_notes": ["stale"], "research_attempts": 1,

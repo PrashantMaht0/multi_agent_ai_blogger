@@ -21,14 +21,24 @@ mcp_config = {
     }
 }
 
-async def _run_research_agent(topic: str) -> str:
+def _retry_note(state: AgentState) -> str:
+    """Tells a retry why the fact-checker rejected the previous research."""
+    feedback = state.get("validation_feedback")
+    if not state.get("research_attempts") or not feedback:
+        return ""
+    return ("PREVIOUS ATTEMPT REJECTED\n"
+            f"The fact-checker rejected your last research for this reason: {feedback}\n"
+            "Search with different terms that address this reason.")
+
+
+async def _run_research_agent(topic: str, retry_note: str = "") -> str:
     # Built per call: an AsyncClient must not outlive the loop asyncio.run() created.
     llm = prompt_spec.llm()
     client = MultiServerMCPClient(mcp_config)
     async with client.session("research_server") as session:
         tools = await client.get_tools()
 
-        system_prompt = prompt_spec.render()
+        system_prompt = prompt_spec.render(retry_note=retry_note)
 
         # Isolate this agent from the outer graph's checkpointer.
         agent = create_react_agent(
@@ -53,7 +63,7 @@ def researcher_node(state: AgentState) -> dict:
     if not notes or state.get("validation_status") != "VALIDATED":
         print(f"🔍 Searching the web for: {topic}...")
         try:
-            findings = asyncio.run(_run_research_agent(topic))
+            findings = asyncio.run(_run_research_agent(topic, _retry_note(state)))
             return {
                 "research_notes": [findings],
                 "research_error": None,
