@@ -193,3 +193,43 @@ def test_judge_prompts_do_not_anchor_scores_with_example_values():
             f"{fn.__name__} shows literal example score(s) {anchored}; "
             "use a placeholder such as <0 or 1> instead"
         )
+
+
+def test_cached_research_skips_the_search_and_new_research_is_cached(monkeypatch, tmp_path):
+    """Repeat sweeps reuse validated notes instead of spending search credits."""
+    seen = []
+
+    class FakeGraph:
+        def invoke(self, state):
+            seen.append(state)
+            return {**state, "research_notes": state["research_notes"] or ["fresh"],
+                    "validation_status": "VALIDATED", "draft": "<p>x</p>"}
+
+    monkeypatch.setattr(harness, "eval_graph", FakeGraph())
+    monkeypatch.setattr(harness, "CACHE_PATH", tmp_path / "cache.json")
+    monkeypatch.setattr(harness, "research_cache", {"cached topic": ["cached note"]})
+
+    harness.run_pipeline({"topic": "cached topic"})
+    harness.run_pipeline({"topic": "new topic"})
+
+    assert seen[0]["research_notes"] == ["cached note"]
+    assert seen[0]["validation_status"] == "VALIDATED"
+    assert seen[1]["research_notes"] == []
+    assert json.loads((tmp_path / "cache.json").read_text())["new topic"] == ["fresh"]
+
+
+def test_summary_averages_scores_and_ignores_unscored():
+    from datetime import datetime, timedelta
+    from types import SimpleNamespace as NS
+
+    start = datetime(2026, 1, 1)
+    rows = [
+        {"run": NS(start_time=start, end_time=start + timedelta(seconds=100)),
+         "evaluation_results": {"results": [NS(key="tone", score=1.0), NS(key="correctness", score=None)]}},
+        {"run": NS(start_time=start, end_time=start + timedelta(seconds=200)),
+         "evaluation_results": {"results": [NS(key="tone", score=0.0), NS(key="correctness", score=0.5)]}},
+    ]
+
+    summary = harness.summarise(rows)
+
+    assert summary == {"tone": 0.5, "correctness": 0.5, "seconds_per_post": 150}

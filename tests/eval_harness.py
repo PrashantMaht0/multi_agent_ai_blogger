@@ -2,13 +2,16 @@
 
     python tests/eval_harness.py --limit 5     # 5 topics
     python tests/eval_harness.py               # all 20
+    python tests/eval_harness.py --cache-research --repetitions 3 --writer-temperature 0.7
 
 Each topic spends one web search credit and three Gemini judge calls.
 """
 
 import argparse
+import dataclasses
 import json
 import os
+import statistics
 import sys
 from pathlib import Path
 
@@ -22,10 +25,12 @@ from src.agents.parsing import judge_messages, message_text
 from src.orchestrator.graph import build_graph
 
 DATASET_PATH = Path(__file__).parent / "dataset.json"
+CACHE_PATH = Path(__file__).parent / "research_cache.json"
 DATASET_NAME = os.getenv("LANGSMITH_DATASET", "ai-blogger-eval")
 JUDGE_MODEL = os.getenv("EVAL_MODEL", "gemini-3.5-flash-lite")
 
 eval_graph = build_graph(enable_hitl=False, include_publisher=False, use_checkpointer=False)
+research_cache: dict[str, list[str]] | None = None
 
 
 def _judge_llm():
@@ -94,13 +99,16 @@ def push_dataset_edits(client) -> int:
 
 def run_pipeline(inputs: dict) -> dict:
     """One invocation: researcher -> validator -> writer -> editor -> sanitizer -> END."""
+    topic = inputs["topic"]
+    # Cached notes skip the search; the validator still re-checks them.
+    cached = research_cache.get(topic) if research_cache is not None else None
     state = eval_graph.invoke({
-        "topic": inputs["topic"],
-        "research_notes": [],
+        "topic": topic,
+        "research_notes": cached or [],
         "research_error": None,
         "research_attempts": 0,
         "raw_sources": [],
-        "validation_status": None,
+        "validation_status": "VALIDATED" if cached else None,
         "validation_feedback": None,
         "run_status": None,
         "sanitizer_removed": [],
@@ -114,6 +122,9 @@ def run_pipeline(inputs: dict) -> dict:
         "revision_count": 0,
         "sender": "eval",
     })
+    if research_cache is not None and not cached and state.get("validation_status") == "VALIDATED":
+        research_cache[topic] = state["research_notes"]
+        CACHE_PATH.write_text(json.dumps(research_cache, indent=2))
     return {
         "draft": state.get("draft", ""),
         "research_notes": state.get("research_notes", []),
@@ -316,6 +327,22 @@ Reply with JSON only, no markdown fences:
 EVALUATORS = [trust_and_safety, editorial_experience, structure_and_layout]
 
 
+def summarise(results) -> dict:
+    """Averages each metric over one experiment, plus seconds per post."""
+    scores: dict[str, list[float]] = {}
+    seconds = []
+    for row in results:
+        run = row["run"]
+        if run.end_time and run.start_time:
+            seconds.append((run.end_time - run.start_time).total_seconds())
+        for result in row["evaluation_results"]["results"]:
+            if result.score is not None:
+                scores.setdefault(result.key, []).append(result.score)
+    summary = {k: statistics.mean(v) for k, v in scores.items()}
+    summary["seconds_per_post"] = statistics.mean(seconds) if seconds else None
+    return summary
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run the LangSmith evaluation sweep.")
     parser.add_argument("--limit", type=int, default=None,
@@ -324,7 +351,24 @@ def main():
                         help="Push edited reference answers from dataset.json to LangSmith first.")
     parser.add_argument("--concurrency", type=int, default=1,
                         help="Parallel examples. Judges are hosted, but the pipeline runs on one local Ollama.")
+    parser.add_argument("--cache-research", action="store_true",
+                        help="Reuse validated research notes from tests/research_cache.json; saves search credits.")
+    parser.add_argument("--writer-temperature", type=float, default=None,
+                        help="Override the writer's temperature for this sweep.")
+    parser.add_argument("--repetitions", type=int, default=1,
+                        help="Run the sweep N times and report the mean and spread of each metric.")
     args = parser.parse_args()
+
+    global research_cache
+    if args.cache_research:
+        research_cache = json.loads(CACHE_PATH.read_text()) if CACHE_PATH.exists() else {}
+        print(f"Research cache: {len(research_cache)} topic(s) cached.")
+
+    import src.agents.writer as writer
+    if args.writer_temperature is not None:
+        writer.prompt_spec = dataclasses.replace(writer.prompt_spec, temperature=args.writer_temperature)
+        writer.writer_llm = writer.prompt_spec.llm()
+    temperature = writer.prompt_spec.temperature
 
     if not os.getenv("LANGSMITH_API_KEY"):
         raise SystemExit("LANGSMITH_API_KEY is not set. Add it to your .env before running.")
@@ -340,15 +384,26 @@ def main():
     print(f"Evaluating {len(data)} examples: {len(data)} web searches, "
           f"{len(data) * len(EVALUATORS)} judge calls on {JUDGE_MODEL}.")
 
-    results = evaluate(
-        run_pipeline,
-        data=data,
-        evaluators=EVALUATORS,
-        experiment_prefix="ai-blogger",
-        max_concurrency=args.concurrency,
-        metadata={"judge_model": JUDGE_MODEL},
-    )
-    print(results)
+    runs = []
+    for repetition in range(1, args.repetitions + 1):
+        results = evaluate(
+            run_pipeline,
+            data=data,
+            evaluators=EVALUATORS,
+            experiment_prefix=f"ai-blogger-t{temperature}",
+            max_concurrency=args.concurrency,
+            metadata={"judge_model": JUDGE_MODEL, "writer_temperature": temperature,
+                      "writer_version": writer.prompt_spec.version, "repetition": repetition,
+                      "cached_research": args.cache_research},
+        )
+        runs.append(summarise(results))
+        print(f"Run {repetition}: {json.dumps(runs[-1], indent=2)}")
+
+    print(f"\nWriter temperature {temperature}, {len(runs)} run(s):")
+    for key in sorted({k for r in runs for k in r}):
+        values = [r[key] for r in runs if r.get(key) is not None]
+        spread = statistics.stdev(values) if len(values) > 1 else 0.0
+        print(f"  {key:20} mean {statistics.mean(values):.3f}  sd {spread:.3f}  runs {[round(v, 2) for v in values]}")
 
 
 if __name__ == "__main__":
