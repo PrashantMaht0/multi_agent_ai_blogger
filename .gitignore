@@ -19,4 +19,5 @@ env/
 claude.md
 .claude
 error_runs.jsonl
-poetry.locktests/research_cache.json
+poetry.lock
+tests/research_cache.json
