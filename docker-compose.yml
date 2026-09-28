@@ -6,7 +6,7 @@
 #   2. OLLAMA_BASE_URL=http://host.docker.internal:11434 in .env (localhost is the
 #      container itself, so the default would fail)
 #   3. token.json exists and is already authorized - the Google OAuth desktop flow opens
-#      a browser and cannot complete inside a container. Run auth_blogger.py on the host first.
+#      a browser and cannot complete inside a container. Run scripts/auth_blogger.py on the host first.
 
 services:
   dashboard:

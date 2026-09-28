@@ -1,6 +1,7 @@
 """Helpers for reading a judge model's reply."""
 
 import json
+import re
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -29,6 +30,15 @@ def message_text(response) -> str:
                 parts.append(block.get("text", ""))
         return "".join(parts)
     return str(content or "")
+
+
+_FENCE = re.compile(r"^\s*```(?:json)?\s*(.*?)\s*```\s*$", re.DOTALL)
+
+
+def strip_json_fence(text: str) -> str:
+    """Removes a markdown code fence around JSON; hosted models add one even when told not to."""
+    match = _FENCE.match(text)
+    return match.group(1) if match else text
 
 
 def parse_verdict_lines(raw: str, options: tuple[str, ...], default: str) -> tuple[str, str]:

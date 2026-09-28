@@ -1,5 +1,7 @@
 """MCP server tests over the in-memory transport, with the HTTP layer mocked."""
 
+import json
+
 import pytest
 from fastmcp import Client
 
@@ -13,52 +15,49 @@ class FakeTavilyResponse:
         return None
 
     def json(self):
-        return {
-            "answer": "MCP is an open standard.",
-            "results": [
-                {"title": "Spec", "url": "https://example.com/spec", "content": "Protocol details."}
-            ],
-        }
+        return {"results": [
+            {"title": "Spec", "url": "https://example.com/spec", "raw_content": "x" * 9000,
+             "published_date": "2025-04-02"},
+            {"title": "Empty", "url": "https://example.com/empty", "raw_content": "   "},
+        ]}
 
 
-@pytest.mark.asyncio
-async def test_search_tool_formats_results(monkeypatch):
-    monkeypatch.setattr(search_server.requests, "post", lambda *a, **kw: FakeTavilyResponse())
-
+async def _search(query="what is mcp"):
     async with Client(search_mcp) as client:
-        tools = await client.list_tools()
-        assert "search_web" in [t.name for t in tools]
-
-        result = await client.call_tool("search_web", {"query": "what is mcp"})
-        output = result.data if hasattr(result, "data") else str(result)
-
-    assert "MCP is an open standard." in output
-    assert "https://example.com/spec" in output
+        result = await client.call_tool("search_sources", {"query": query})
+    return json.loads(result.content[0].text)
 
 
 @pytest.mark.asyncio
-async def test_search_tool_reports_missing_api_key(monkeypatch):
+async def test_search_sources_asks_for_page_text_and_drops_empty_pages(monkeypatch):
+    sent = {}
+
+    def fake_post(url, json):
+        sent.update(json)
+        return FakeTavilyResponse()
+
+    monkeypatch.setattr(search_server.requests, "post", fake_post)
+    sources = await _search()
+
+    assert sent["include_raw_content"] is True and sent["max_results"] == 3
+    assert [s["url"] for s in sources] == ["https://example.com/spec"]
+    assert len(sources[0]["raw_content"]) == 6000
+    assert sources[0]["published_date"] == "2025-04-02"
+
+
+@pytest.mark.asyncio
+async def test_search_sources_reports_missing_api_key(monkeypatch):
     monkeypatch.delenv("TAVILY_API_KEY", raising=False)
-
-    async with Client(search_mcp) as client:
-        result = await client.call_tool("search_web", {"query": "what is mcp"})
-        output = result.data if hasattr(result, "data") else str(result)
-
-    assert "TAVILY_API_KEY is not set" in output
+    assert "TAVILY_API_KEY is not set" in (await _search())["error"]
 
 
 @pytest.mark.asyncio
-async def test_search_tool_returns_error_string_on_failure(monkeypatch):
+async def test_search_sources_returns_an_error_on_failure(monkeypatch):
     def boom(*args, **kwargs):
         raise RuntimeError("connection reset")
 
     monkeypatch.setattr(search_server.requests, "post", boom)
-
-    async with Client(search_mcp) as client:
-        result = await client.call_tool("search_web", {"query": "what is mcp"})
-        output = result.data if hasattr(result, "data") else str(result)
-
-    assert "Error executing web search" in output
+    assert "connection reset" in (await _search())["error"]
 
 
 @pytest.mark.asyncio

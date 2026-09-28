@@ -1,0 +1,1216 @@
+{
+  "slug": "dram",
+  "topic": "How did DRAM prices change over the last decade?",
+  "recorded_on": "2026-09-28",
+  "prompt_versions": {
+    "planner": "1.1",
+    "researcher": "2.4",
+    "auditor": "1.0",
+    "cross_check": "1.0",
+    "writer": "2.5",
+    "editor": "2.0"
+  },
+  "total_seconds": 425.3,
+  "draft_words": 617,
+  "events": [
+    {
+      "t": 0.0,
+      "node": "planner",
+      "update": {
+        "timeframe": {
+          "start_year": 2016,
+          "end_year": 2026,
+          "label": "the last decade"
+        },
+        "sub_questions": [
+          {
+            "id": "q1",
+            "question": "What was the overall trend in DRAM prices from 2016 to 2026?",
+            "origin": "planner"
+          },
+          {
+            "id": "q2",
+            "question": "How did global supply and demand dynamics affect DRAM prices during the last decade?",
+            "origin": "planner"
+          },
+          {
+            "id": "q3",
+            "question": "Were there any significant price spikes or drops in DRAM during specific years (e.g., 2020, 2022)?",
+            "origin": "planner"
+          },
+          {
+            "id": "q4",
+            "question": "What role did semiconductor industry advancements play in shaping DRAM pricing trends?",
+            "origin": "planner"
+          },
+          {
+            "id": "q5",
+            "question": "How did major DRAM manufacturers (e.g., Samsung, Micron) influence pricing during this period?",
+            "origin": "planner"
+          },
+          {
+            "id": "q6",
+            "question": "What were the key factors driving DRAM price fluctuations in 2026 compared to 2016?",
+            "origin": "planner"
+          },
+          {
+            "id": "q7",
+            "question": "Did geopolitical events or trade policies impact DRAM pricing trends over the last decade?",
+            "origin": "planner"
+          }
+        ],
+        "sender": "planner"
+      }
+    },
+    {
+      "t": 40.0,
+      "node": "research_branch",
+      "update": {
+        "claims": [
+          {
+            "id": "q1-1",
+            "sub_question_id": "q1",
+            "text": "DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%.",
+            "quote": "DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%.",
+            "source_url": "https://en.unibetter-ic.com/ram-memory-shortage-2026",
+            "source_title": "RAM Memory Shortage 2026 Guide: Price Trend and ...",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q1-2",
+            "sub_question_id": "q1",
+            "text": "DDR5 prices have risen by about 307% over the past year.",
+            "quote": "DDR5 prices have risen by about 307% over the past year, while DDR4 prices have increased by about 158%.",
+            "source_url": "https://www.ersaelectronics.com/blog/memory-chip-price-increase",
+            "source_title": "Memory Chip Price Increase: 2026 Market Trends ...",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q1-3",
+            "sub_question_id": "q1",
+            "text": "Memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025).",
+            "quote": "memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025).",
+            "source_url": "https://en.unibetter-ic.com/ram-memory-shortage-2026",
+            "source_title": "RAM Memory Shortage 2026 Guide: Price Trend and ...",
+            "published": null,
+            "confidence": 1.0
+          }
+        ],
+        "branch_errors": []
+      }
+    },
+    {
+      "t": 81.5,
+      "node": "research_branch",
+      "update": {
+        "claims": [
+          {
+            "id": "q2-1",
+            "sub_question_id": "q2",
+            "text": "The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand.",
+            "quote": "The global DRAM market is forecast to approach $400 billion by 2027 as AI and data centre growth accelerate HBM demand.",
+            "source_url": "https://www.globenewswire.com/news-release/2026/08/17/3345981/0/en/the-global-dram-market-report-2026-2036-evaluating-hbm4-ddr5-gddr7-adoption-cmos-bonded-arrays-and-strategies-of-sk-hynix-samsung-micron-and-asml.html",
+            "source_title": "The Global DRAM Market Report 2026\u20132036: Evaluating HBM4,",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q2-2",
+            "sub_question_id": "q2",
+            "text": "DRAM prices have recently turned upward due to increased AI demand and tighter supply.",
+            "quote": "more recently have turned upward in another strong upcycle driven by AI demand and tighter supply.",
+            "source_url": "https://thefusionreport.substack.com/p/what-is-going-on-with-the-dram-shortage",
+            "source_title": "What Is Going On With The DRAM Shortage?",
+            "published": null,
+            "confidence": 1.0
+          }
+        ],
+        "branch_errors": []
+      }
+    },
+    {
+      "t": 112.6,
+      "node": "research_branch",
+      "update": {
+        "claims": [
+          {
+            "id": "q3-1",
+            "sub_question_id": "q3",
+            "text": "DRAM prices were spiking during periods of high demand.",
+            "quote": "Prices are _going up_.",
+            "source_url": "https://news.ycombinator.com/item?id=46059737",
+            "source_title": "DRAM prices are spiking, but I don't trust the industry's why",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q3-2",
+            "sub_question_id": "q3",
+            "text": "DRAM prices were kept from dropping during spikes in demand.",
+            "quote": "then during spikes in demand (or alleged spikes in demand) they coordinate to keep the price from dropping.",
+            "source_url": "https://news.ycombinator.com/item?id=46059737",
+            "source_title": "DRAM prices are spiking, but I don't trust the industry's why",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q3-3",
+            "sub_question_id": "q3",
+            "text": "DRAM prices were falling during periods of low demand and high supply.",
+            "quote": "When they were doing price fixing it was because there was a glut of supply and demand was tanking. Prices were _falling_ and they coordinated to keep prices from falling less.",
+            "source_url": "https://news.ycombinator.com/item?id=46059737",
+            "source_title": "DRAM prices are spiking, but I don't trust the industry's why",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q3-4",
+            "sub_question_id": "q3",
+            "text": "DRAM prices are expected to normalize in the 2024\u20132026 period.",
+            "quote": "When Will RAM Prices Drop? Global Memory Market Outlook 2024\u20132026",
+            "source_url": "https://www.bacloud.com/en/blog/230/when-will-ram-prices-drop-global-memory-market-outlook-20242026.html",
+            "source_title": "When Will RAM Prices Drop? Global Memory Market",
+            "published": "2025-11-12",
+            "confidence": 0.8
+          }
+        ],
+        "branch_errors": []
+      }
+    },
+    {
+      "t": 149.2,
+      "node": "research_branch",
+      "update": {
+        "claims": [
+          {
+            "id": "q4-1",
+            "sub_question_id": "q4",
+            "text": "Semiconductor price trends, including DRAM, have shown breaks in trends around specific years, indicating significant shifts in pricing dynamics.",
+            "quote": "We find compelling statistical evidence of breaks in MPU price trends in 1994 and 2001 and reasonably strong evidence of similar breaks for DRAM prices.",
+            "source_url": "https://www.federalreserve.gov/pubs/feds/2006/200644/index.html",
+            "source_title": "FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress",
+            "published": null,
+            "confidence": 0.9
+          },
+          {
+            "id": "q4-2",
+            "sub_question_id": "q4",
+            "text": "DRAM pricing has been influenced by worldwide supply-demand conditions, leading to wide swings in prices.",
+            "quote": "The role for markups is especially pronounced for DRAM chips, which are subject to wide swings in worldwide supply-demand conditions.",
+            "source_url": "https://www.federalreserve.gov/pubs/feds/2006/200644/index.html",
+            "source_title": "FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress",
+            "published": null,
+            "confidence": 0.8
+          },
+          {
+            "id": "q4-3",
+            "sub_question_id": "q4",
+            "text": "The DRAM market is projected to grow significantly, with a compound annual growth rate (CAGR) of 10.2% from 2025 to 2035.",
+            "quote": "The DRAM industry is projected to grow from 144.47 USD Billion in 2025 to 381.67 USD Billion by 2035, exhibiting a compound annual growth rate (CAGR) of 10.2% during the forecast period 2025 - 2035",
+            "source_url": "https://www.marketresearchfuture.com/reports/dram-market-978",
+            "source_title": "DRAM Market Size, Share, Analysis & Forecast to 2035",
+            "published": null,
+            "confidence": 0.9
+          },
+          {
+            "id": "q4-4",
+            "sub_question_id": "q4",
+            "text": "Technological advancements and increasing demand for high-performance computing solutions are driving the DRAM market.",
+            "quote": "The Dynamic RAM (DRAM) market is currently experiencing a transformative phase, driven by advancements in technology and increasing demand for high-performance computing solutions.",
+            "source_url": "https://www.marketresearchfuture.com/reports/dram-market-978",
+            "source_title": "DRAM Market Size, Share, Analysis & Forecast to 2035",
+            "published": null,
+            "confidence": 0.8
+          }
+        ],
+        "branch_errors": []
+      }
+    },
+    {
+      "t": 193.5,
+      "node": "research_branch",
+      "update": {
+        "claims": [
+          {
+            "id": "q5-1",
+            "sub_question_id": "q5",
+            "text": "Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002.",
+            "quote": "The decreased production of DRAM has led to massively marked-up prices for DRAM purchasers, driving up electronics prices. The lawsuit points out that between 1998 and 2002, these same three companies, Samsung, Hynix (the predecessor of SK Hynix), and Micron, took part in a criminal conspiracy to fi",
+            "source_url": "https://www.polygon.com/ram-manufacturers-sued-supply-price-fixing",
+            "source_title": "Major RAM manufacturers sued for manipulating prices and demand",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q5-2",
+            "sub_question_id": "q5",
+            "text": "DRAM price fixing caused prices to skyrocket through 2016 and 2017, with the price of DRAM nearly tripling between June 2016 and January 2018.",
+            "quote": "Between June 2016 and January 2018, the price of DRAM nearly tripled.",
+            "source_url": "https://en.wikipedia.org/wiki/DRAM_price_fixing_scandal",
+            "source_title": "DRAM industry price fixing - Wikipedia",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q5-3",
+            "sub_question_id": "q5",
+            "text": "Samsung and Micron raised DDR4 prices by up to 30% in the fourth quarter of 2025.",
+            "quote": "Samsung is reportedly preparing one of its most aggressive memory pricing strategies in recent years amid surging demand from the AI sector. According to [TrendForce reports](https://www.trendforce.com/news/2025/09/22/news-samsung-reportedly-plans-q4-memory-price-hikes-dram-up-30-nand-up-10/), the c",
+            "source_url": "https://sourceability.com/post/memory-price-hikes-and-the-labor-crisis-reshape-supply-chains",
+            "source_title": "Samsung increases DRAM prices after Micron | Sourceability",
+            "published": "2025-10-03",
+            "confidence": 1.0
+          },
+          {
+            "id": "q5-4",
+            "sub_question_id": "q5",
+            "text": "Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue.",
+            "quote": "Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue.",
+            "source_url": "https://www.polygon.com/ram-manufacturers-sued-supply-price-fixing",
+            "source_title": "Major RAM manufacturers sued for manipulating prices and demand",
+            "published": null,
+            "confidence": 1.0
+          }
+        ],
+        "branch_errors": []
+      }
+    },
+    {
+      "t": 201.6,
+      "node": "research_branch",
+      "update": {
+        "claims": [],
+        "branch_errors": [
+          {
+            "sub_question_id": "q6",
+            "error": "no quotable claims"
+          }
+        ]
+      }
+    },
+    {
+      "t": 246.4,
+      "node": "research_branch",
+      "update": {
+        "claims": [
+          {
+            "id": "q7-1",
+            "sub_question_id": "q7",
+            "text": "Geopolitical rivalry between the U.S. and China has introduced persistent economic shocks that may have permanently altered the time-series properties of economic variables.",
+            "quote": "This paper analyzes the long-memory properties in U.S. semiconductor industry production and price series. The analysis is framed within the context of the U.S.-China geopolitical rivalry, which is hypothesized to present a series of persistent economic shocks.",
+            "source_url": "https://link.springer.com/article/10.1007/s40812-026-00414-2",
+            "source_title": "Geopolitical rivalry and structural change in semiconductor markets: evidence from long-memory dynamics | Journal of Industrial and Business Economics | Springer Nature Link",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q7-2",
+            "sub_question_id": "q7",
+            "text": "Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing.",
+            "quote": "Geopolitical factors have affected global trade only after 2018, mostly driven by deteriorating geopolitical relations between the US and China. Trade between geopolitically aligned countries, or friend-shoring, has increased since 2018, while trade between rivals has decreased.",
+            "source_url": "https://cepr.org/voxeu/columns/how-geopolitics-changing-trade",
+            "source_title": "How geopolitics is changing trade | CEPR",
+            "published": null,
+            "confidence": 1.0
+          }
+        ],
+        "branch_errors": []
+      }
+    },
+    {
+      "t": 264.6,
+      "node": "auditor",
+      "update": {
+        "claim_verdicts": {
+          "q1-1": {
+            "status": "supported",
+            "reason": "The quote matches the claim word-for-word, stating that DRAM prices are expected to rise in Q2 2026 by up to 70%."
+          },
+          "q1-2": {
+            "status": "supported",
+            "reason": "The quote directly supports the claim that DDR5 prices have risen by about 307% over the past year."
+          },
+          "q1-3": {
+            "status": "supported",
+            "reason": "The quote matches the claim regarding the sharp rise in memory prices in Q1 2026 compared to Q4 2025."
+          },
+          "q2-1": {
+            "status": "supported",
+            "reason": "The quote directly matches the claim regarding the DRAM market forecast and the drivers behind it."
+          },
+          "q2-2": {
+            "status": "supported",
+            "reason": "The quote directly supports the claim that DRAM prices have turned upward due to AI demand and tighter supply."
+          },
+          "q3-1": {
+            "status": "supported",
+            "reason": "The quote directly states that prices are going up during periods described as spiking."
+          },
+          "q3-2": {
+            "status": "unsupported",
+            "reason": "The quote refers to keeping prices from dropping *less* or coordinating during a glut of supply, not keeping prices from dropping during spikes in demand."
+          },
+          "q3-3": {
+            "status": "supported",
+            "reason": "The quote explicitly mentions that prices were falling when there was a glut of supply and demand was tanking."
+          },
+          "q3-4": {
+            "status": "supported",
+            "reason": "The quote provides the outlook period of 2024\u20132026 for when RAM prices will drop/normalize."
+          },
+          "q4-1": {
+            "status": "supported",
+            "reason": "The quote directly supports the claim that DRAM prices have shown breaks in trends, indicating shifts in pricing dynamics."
+          },
+          "q4-2": {
+            "status": "supported",
+            "reason": "The quote confirms that DRAM chips are subject to wide swings in worldwide supply-demand conditions, which influence markups and pricing."
+          },
+          "q4-3": {
+            "status": "supported",
+            "reason": "The quote explicitly provides the projected growth figures and CAGR of 10.2% from 2025 to 2035 for the DRAM industry."
+          },
+          "q4-4": {
+            "status": "supported",
+            "reason": "The quote states that the DRAM market is being driven by technological advancements and increasing demand for high-performance computing solutions."
+          },
+          "q5-1": {
+            "status": "supported",
+            "reason": "The quote directly states that Samsung, Hynix, and Micron took part in a criminal conspiracy to fix DRAM prices between 1998 and 2002."
+          },
+          "q5-2": {
+            "status": "supported",
+            "reason": "The quote confirms that the price of DRAM nearly tripled between June 2016 and January 2018."
+          },
+          "q5-3": {
+            "status": "unsupported",
+            "reason": "The quote mentions Samsung planning memory price hikes up to 30%, but does not explicitly state that Micron also raised DDR4 prices by up to 30% in Q4 2025."
+          },
+          "q5-4": {
+            "status": "supported",
+            "reason": "The quote matches the claim verbatim, stating that Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue."
+          },
+          "q7-1": {
+            "status": "unsupported",
+            "reason": "The quote states that the paper hypothesizes persistent economic shocks, whereas the claim states as a fact that they have been introduced and permanently altered time-series properties."
+          },
+          "q7-2": {
+            "status": "supported",
+            "reason": "The quote directly confirms that geopolitical tensions between the U.S. and China have affected trade since 2018, decreasing trade between rivals and increasing friend-shoring."
+          }
+        },
+        "branch_errors": [],
+        "audit_status": "PASSED",
+        "audit_feedback": "16 supported claims across 6 sub questions",
+        "audit_loops": 1,
+        "research_notes": [
+          "- DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%. (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+          "- DDR5 prices have risen by about 307% over the past year. (Source: Memory Chip Price Increase: 2026 Market Trends ...)",
+          "- Memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025). (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+          "- The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand. (Source: The Global DRAM Market Report 2026\u20132036: Evaluating HBM4,)",
+          "- DRAM prices have recently turned upward due to increased AI demand and tighter supply. (Source: What Is Going On With The DRAM Shortage?)",
+          "- DRAM prices were spiking during periods of high demand. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+          "- DRAM prices were falling during periods of low demand and high supply. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+          "- DRAM prices are expected to normalize in the 2024\u20132026 period. (Source: When Will RAM Prices Drop? Global Memory Market)",
+          "- Semiconductor price trends, including DRAM, have shown breaks in trends around specific years, indicating significant shifts in pricing dynamics. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+          "- DRAM pricing has been influenced by worldwide supply-demand conditions, leading to wide swings in prices. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+          "- The DRAM market is projected to grow significantly, with a compound annual growth rate (CAGR) of 10.2% from 2025 to 2035. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+          "- Technological advancements and increasing demand for high-performance computing solutions are driving the DRAM market. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+          "- Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+          "- DRAM price fixing caused prices to skyrocket through 2016 and 2017, with the price of DRAM nearly tripling between June 2016 and January 2018. (Source: DRAM industry price fixing - Wikipedia)",
+          "- Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+          "- Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing. (Source: How geopolitics is changing trade | CEPR)"
+        ],
+        "sender": "auditor"
+      }
+    },
+    {
+      "t": 267.1,
+      "node": "cross_check",
+      "update": {
+        "contradictions": [
+          {
+            "claim_ids": [
+              "q3-4",
+              "q1-1"
+            ],
+            "note": "Claim q3-4 states that DRAM prices are expected to normalize between 2024 and 2026, whereas claim q1-1 states that prices are surging dramatically by up to 70% in Q2 2026."
+          }
+        ],
+        "gaps": [
+          {
+            "question": "What specific impact did the COVID-19 pandemic have on DRAM supply chains and pricing between 2020 and 2022?",
+            "reason": "The researched questions mention 2020 and 2022 as years of significant spikes or drops, but no supported claims detail how the pandemic affected the market during this period.",
+            "important": true
+          },
+          {
+            "question": "How did the transition from DDR4 to DDR5 memory standards influence pricing trends over the last decade?",
+            "reason": "While DDR5 price increases are mentioned for the recent period, understanding the generational transition is critical for explaining overall decade-long price dynamics.",
+            "important": false
+          }
+        ],
+        "research_notes": [
+          "- DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%. (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+          "- DDR5 prices have risen by about 307% over the past year. (Source: Memory Chip Price Increase: 2026 Market Trends ...)",
+          "- Memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025). (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+          "- The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand. (Source: The Global DRAM Market Report 2026\u20132036: Evaluating HBM4,)",
+          "- DRAM prices have recently turned upward due to increased AI demand and tighter supply. (Source: What Is Going On With The DRAM Shortage?)",
+          "- DRAM prices were spiking during periods of high demand. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+          "- DRAM prices were falling during periods of low demand and high supply. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+          "- DRAM prices are expected to normalize in the 2024\u20132026 period. (Source: When Will RAM Prices Drop? Global Memory Market)",
+          "- Semiconductor price trends, including DRAM, have shown breaks in trends around specific years, indicating significant shifts in pricing dynamics. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+          "- DRAM pricing has been influenced by worldwide supply-demand conditions, leading to wide swings in prices. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+          "- The DRAM market is projected to grow significantly, with a compound annual growth rate (CAGR) of 10.2% from 2025 to 2035. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+          "- Technological advancements and increasing demand for high-performance computing solutions are driving the DRAM market. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+          "- Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+          "- DRAM price fixing caused prices to skyrocket through 2016 and 2017, with the price of DRAM nearly tripling between June 2016 and January 2018. (Source: DRAM industry price fixing - Wikipedia)",
+          "- Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+          "- Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing. (Source: How geopolitics is changing trade | CEPR)",
+          "Sources disagree: Claim q3-4 states that DRAM prices are expected to normalize between 2024 and 2026, whereas claim q1-1 states that prices are surging dramatically by up to 70% in Q2 2026."
+        ],
+        "sender": "cross_check"
+      }
+    },
+    {
+      "t": 267.1,
+      "node": "gap_planner",
+      "update": {
+        "sub_questions": [
+          {
+            "id": "q8",
+            "question": "What specific impact did the COVID-19 pandemic have on DRAM supply chains and pricing between 2020 and 2022?",
+            "origin": "gap"
+          },
+          {
+            "id": "q9",
+            "question": "How did the transition from DDR4 to DDR5 memory standards influence pricing trends over the last decade?",
+            "origin": "gap"
+          }
+        ],
+        "sender": "gap_planner"
+      }
+    },
+    {
+      "t": 299.4,
+      "node": "research_branch",
+      "update": {
+        "claims": [
+          {
+            "id": "q8-1",
+            "sub_question_id": "q8",
+            "text": "The pandemic caused profound disruptions to the globalized model of supply chains, including those in the IT and Communication sectors.",
+            "quote": "The COVID-19 global pandemic caused profound disruptions to the globalized model of supply chains, including those in the IT and Communication sectors.",
+            "source_url": "https://www.cisa.gov/sites/default/files/publications/lessons-learned-during-covid-19-pandemic_508_1.pdf",
+            "source_title": "Lessons Learned During the COVID-19 Pandemic",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q8-2",
+            "sub_question_id": "q8",
+            "text": "National lockdowns in 2022 slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting manufacturing.",
+            "quote": "in 2022, national lockdowns slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting manufacturing as a result.",
+            "source_url": "https://www.ey.com/en_us/insights/supply-chain/how-covid-19-impacted-supply-chains-and-what-comes-next",
+            "source_title": "How COVID-19 impacted supply chains and what comes next | EY - US",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q8-3",
+            "sub_question_id": "q8",
+            "text": "The pandemic did not necessarily create any new challenges for supply chains.",
+            "quote": "However, the pandemic did not necessarily create any new challenges for supply chains.",
+            "source_url": "https://www.ey.com/en_us/insights/supply-chain/how-covid-19-impacted-supply-chains-and-what-comes-next",
+            "source_title": "How COVID-19 impacted supply chains and what comes next | EY - US",
+            "published": null,
+            "confidence": 1.0
+          }
+        ],
+        "branch_errors": []
+      }
+    },
+    {
+      "t": 336.4,
+      "node": "research_branch",
+      "update": {
+        "claims": [
+          {
+            "id": "q9-1",
+            "sub_question_id": "q9",
+            "text": "Standard DDR5 memory prices have risen sharply through 2026, with some 32GB kits climbing from roughly $95 to $250 in mid-2025 to $550 to $650 today.",
+            "quote": "Standard DDR5 memory prices have risen sharply through 2026, with some 32GB kits climbing from roughly $95 to $250 in mid-2025 to $550 to $650 today",
+            "source_url": "https://info.fusionww.com/blog/why-ddr5-prices-have-nearly-quadrupled-in-2026",
+            "source_title": "Why DDR5 Prices Have Nearly Quadrupled in 2026",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q9-2",
+            "sub_question_id": "q9",
+            "text": "HBM's share of global DRAM wafer production has grown to an estimated 23% in 2026, up from about 8% in 2024.",
+            "quote": "HBM's share of global DRAM wafer production has grown to an estimated 23% in 2026, up from about 8% in 2024",
+            "source_url": "https://info.fusionww.com/blog/why-ddr5-prices-have-nearly-quadrupled-in-2026",
+            "source_title": "Why DDR5 Prices Have Nearly Quadrupled in 2026",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q9-3",
+            "sub_question_id": "q9",
+            "text": "Samsung, SK Hynix, and Micron together control roughly 95% of global DRAM production.",
+            "quote": "Samsung, SK Hynix, and Micron together control roughly 95% of global DRAM production",
+            "source_url": "https://info.fusionww.com/blog/why-ddr5-prices-have-nearly-quadrupled-in-2026",
+            "source_title": "Why DDR5 Prices Have Nearly Quadrupled in 2026",
+            "published": null,
+            "confidence": 1.0
+          },
+          {
+            "id": "q9-4",
+            "sub_question_id": "q9",
+            "text": "DDR5 prices have nearly quadrupled in 2026 due to a shortage driven by HBM memory demand.",
+            "quote": "DDR5 prices have nearly quadrupled in 2026",
+            "source_url": "https://info.fusionww.com/blog/why-ddr5-prices-have-nearly-quadrupled-in-2026",
+            "source_title": "Why DDR5 Prices Have Nearly Quadrupled in 2026",
+            "published": null,
+            "confidence": 1.0
+          }
+        ],
+        "branch_errors": []
+      }
+    },
+    {
+      "t": 340.7,
+      "node": "auditor",
+      "update": {
+        "claim_verdicts": {
+          "q8-1": {
+            "status": "supported",
+            "reason": "The quote directly matches the claim regarding the pandemic causing profound disruptions to supply chains in the IT and Communication sectors."
+          },
+          "q8-2": {
+            "status": "supported",
+            "reason": "The quote directly supports the claim that national lockdowns in 2022 slowed or stopped the flow of goods and disrupted manufacturing."
+          },
+          "q8-3": {
+            "status": "supported",
+            "reason": "The quote directly matches the claim that the pandemic did not necessarily create new challenges for supply chains."
+          },
+          "q9-1": {
+            "status": "supported",
+            "reason": "The quote matches the claim word-for-word, providing the exact same figures, dates, and pricing details."
+          },
+          "q9-2": {
+            "status": "supported",
+            "reason": "The quote provides the exact same percentage and year figures regarding HBM's share of global DRAM wafer production."
+          },
+          "q9-3": {
+            "status": "supported",
+            "reason": "The quote matches the claim word-for-word, stating the same 95% control statistic for the three companies."
+          },
+          "q9-4": {
+            "status": "supported",
+            "reason": "The quote explicitly supports the core statement that DDR5 prices have nearly quadrupled in 2026."
+          }
+        },
+        "branch_errors": [],
+        "audit_status": "PASSED",
+        "audit_feedback": "23 supported claims across 8 sub questions",
+        "audit_loops": 2,
+        "research_notes": [
+          "- DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%. (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+          "- DDR5 prices have risen by about 307% over the past year. (Source: Memory Chip Price Increase: 2026 Market Trends ...)",
+          "- Memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025). (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+          "- The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand. (Source: The Global DRAM Market Report 2026\u20132036: Evaluating HBM4,)",
+          "- DRAM prices have recently turned upward due to increased AI demand and tighter supply. (Source: What Is Going On With The DRAM Shortage?)",
+          "- DRAM prices were spiking during periods of high demand. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+          "- DRAM prices were falling during periods of low demand and high supply. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+          "- DRAM prices are expected to normalize in the 2024\u20132026 period. (Source: When Will RAM Prices Drop? Global Memory Market)",
+          "- Semiconductor price trends, including DRAM, have shown breaks in trends around specific years, indicating significant shifts in pricing dynamics. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+          "- DRAM pricing has been influenced by worldwide supply-demand conditions, leading to wide swings in prices. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+          "- The DRAM market is projected to grow significantly, with a compound annual growth rate (CAGR) of 10.2% from 2025 to 2035. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+          "- Technological advancements and increasing demand for high-performance computing solutions are driving the DRAM market. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+          "- Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+          "- DRAM price fixing caused prices to skyrocket through 2016 and 2017, with the price of DRAM nearly tripling between June 2016 and January 2018. (Source: DRAM industry price fixing - Wikipedia)",
+          "- Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+          "- Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing. (Source: How geopolitics is changing trade | CEPR)",
+          "- The pandemic caused profound disruptions to the globalized model of supply chains, including those in the IT and Communication sectors. (Source: Lessons Learned During the COVID-19 Pandemic)",
+          "- National lockdowns in 2022 slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting manufacturing. (Source: How COVID-19 impacted supply chains and what comes next | EY - US)",
+          "- The pandemic did not necessarily create any new challenges for supply chains. (Source: How COVID-19 impacted supply chains and what comes next | EY - US)",
+          "- Standard DDR5 memory prices have risen sharply through 2026, with some 32GB kits climbing from roughly $95 to $250 in mid-2025 to $550 to $650 today. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+          "- HBM's share of global DRAM wafer production has grown to an estimated 23% in 2026, up from about 8% in 2024. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+          "- Samsung, SK Hynix, and Micron together control roughly 95% of global DRAM production. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+          "- DDR5 prices have nearly quadrupled in 2026 due to a shortage driven by HBM memory demand. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+          "Sources disagree: Claim q3-4 states that DRAM prices are expected to normalize between 2024 and 2026, whereas claim q1-1 states that prices are surging dramatically by up to 70% in Q2 2026."
+        ],
+        "sender": "auditor"
+      }
+    },
+    {
+      "t": 343.3,
+      "node": "cross_check",
+      "update": {
+        "contradictions": [
+          {
+            "claim_ids": [
+              "q3-4",
+              "q1-1"
+            ],
+            "note": "Claim q3-4 states that RAM prices are expected to normalize in the 2024-2026 period, whereas claim q1-1 states that DRAM prices are expected to continue rising in Q2 2026 with a potential surge of up to 70%."
+          }
+        ],
+        "gaps": [
+          {
+            "question": "How did the shift from DDR4 to DDR5 specifically impact manufacturing capacities and pricing transition phases between 2020 and 2025?",
+            "reason": "Although the prompts mention the transition of memory standards, there is no specific data explaining how manufacturers converted production lines from DDR4 to DDR5 and how that transition phase directly impacted consumer pricing prior to the 2026 surge.",
+            "important": false
+          }
+        ],
+        "research_notes": [
+          "- DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%. (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+          "- DDR5 prices have risen by about 307% over the past year. (Source: Memory Chip Price Increase: 2026 Market Trends ...)",
+          "- Memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025). (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+          "- The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand. (Source: The Global DRAM Market Report 2026\u20132036: Evaluating HBM4,)",
+          "- DRAM prices have recently turned upward due to increased AI demand and tighter supply. (Source: What Is Going On With The DRAM Shortage?)",
+          "- DRAM prices were spiking during periods of high demand. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+          "- DRAM prices were falling during periods of low demand and high supply. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+          "- DRAM prices are expected to normalize in the 2024\u20132026 period. (Source: When Will RAM Prices Drop? Global Memory Market)",
+          "- Semiconductor price trends, including DRAM, have shown breaks in trends around specific years, indicating significant shifts in pricing dynamics. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+          "- DRAM pricing has been influenced by worldwide supply-demand conditions, leading to wide swings in prices. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+          "- The DRAM market is projected to grow significantly, with a compound annual growth rate (CAGR) of 10.2% from 2025 to 2035. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+          "- Technological advancements and increasing demand for high-performance computing solutions are driving the DRAM market. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+          "- Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+          "- DRAM price fixing caused prices to skyrocket through 2016 and 2017, with the price of DRAM nearly tripling between June 2016 and January 2018. (Source: DRAM industry price fixing - Wikipedia)",
+          "- Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+          "- Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing. (Source: How geopolitics is changing trade | CEPR)",
+          "- The pandemic caused profound disruptions to the globalized model of supply chains, including those in the IT and Communication sectors. (Source: Lessons Learned During the COVID-19 Pandemic)",
+          "- National lockdowns in 2022 slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting manufacturing. (Source: How COVID-19 impacted supply chains and what comes next | EY - US)",
+          "- The pandemic did not necessarily create any new challenges for supply chains. (Source: How COVID-19 impacted supply chains and what comes next | EY - US)",
+          "- Standard DDR5 memory prices have risen sharply through 2026, with some 32GB kits climbing from roughly $95 to $250 in mid-2025 to $550 to $650 today. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+          "- HBM's share of global DRAM wafer production has grown to an estimated 23% in 2026, up from about 8% in 2024. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+          "- Samsung, SK Hynix, and Micron together control roughly 95% of global DRAM production. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+          "- DDR5 prices have nearly quadrupled in 2026 due to a shortage driven by HBM memory demand. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+          "Sources disagree: Claim q3-4 states that RAM prices are expected to normalize in the 2024-2026 period, whereas claim q1-1 states that DRAM prices are expected to continue rising in Q2 2026 with a potential surge of up to 70%."
+        ],
+        "sender": "cross_check"
+      }
+    },
+    {
+      "t": 414.3,
+      "node": "writer",
+      "update": {
+        "draft": "<h2>Dramatic Price Shifts in DRAM: A Decade of Volatility</h2>\n\n<p><strong>Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue.</strong> This dominance has made the memory market highly susceptible to supply chain disruptions and demand fluctuations. Without these major players controlling such a large share, price swings would be less extreme\u2014making it harder to predict cost trends or plan budgets in industries reliant on high-speed data access.</p>\n\n<h3>The Rise of DDR5: A Quadruple Increase</h3>\n\n<p>Standard DDR5 memory prices have risen sharply through 2026. Some 32GB kits climbed from roughly $95 to $250 in mid-2025, reaching as high as $550 to $650 today. This surge has made it increasingly difficult for consumers and businesses alike to upgrade hardware without facing significant cost barriers.</p>\n\n<p>The price increase is driven by a shortage fueled primarily by HBM memory demand. As artificial intelligence applications expand across industries\u2014from healthcare diagnostics to autonomous vehicles\u2014demand for high-bandwidth memory continues to outpace supply, pushing DDR5 prices nearly quadruple in less than two years.</p>\n\n<h3>DRAM Price Volatility: From Spikes to Slumps</h3>\n\n<p><strong>DRAM prices were spiking during periods of high demand and falling when there was low demand and high supply.</strong> These cycles have created a volatile pricing environment where businesses must constantly adapt their purchasing strategies. For example, in Q1 2026, memory prices increased by as much as 80% to 90% compared with the previous quarter (Q4 2025), reflecting an urgent need for semiconductor components.</p>\n\n<p>Conversely, when supply outstripped demand\u2014such as during periods of economic downturn or technological stagnation\u2014DRAM prices dropped significantly. This fluctuation has made it challenging to forecast costs and plan long-term investments in IT infrastructure that depends on memory performance.</p>\n\n<h3>The Role of Geopolitical Tensions</h3>\n\n<p>Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing. These shifts disrupted traditional supply chains used in semiconductor manufacturing, contributing to price instability.</p>\n\n<p>The pandemic further complicated matters by causing profound disruptions to the globalized model of production and distribution. National lockdowns in 2022 slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting memory chip manufacturing worldwide. While some argue that these challenges were not entirely new\u2014suggesting supply chains have always faced risks\u2014it is clear that recent events accelerated existing vulnerabilities.</p>\n\n<h3>DRAM Price Trends: A Market in Flux</h3>\n\n<p><strong>The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand.</strong> This projection underscores the rapid expansion of memory requirements as industries embrace more complex computing solutions. The compound annual growth rate (CAGR) for the sector has been estimated at 10.2% from 2025 to 2035, indicating a sustained upward trajectory despite short-term volatility.</p>\n\n<p>However, sources disagree on when this trend will stabilize. Some claim RAM prices are expected to normalize in the 2024\u20132026 period, while others suggest DRAM prices may continue rising into Q2 2026 with potential surges of up to 70%. This uncertainty highlights how closely tied memory pricing is to broader economic and technological shifts.</p>\n\n<h3>A History of Manipulation: The Price Fixing Scandal</h3>\n\n<p><strong>Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002.</strong> This illegal activity led to significant price increases that lasted well into the early 2010s. The scandal not only damaged reputations but also created long-term distrust among consumers, investors, and regulators regarding market fairness.</p>\n\n<p>The legacy of this manipulation is still felt today in how closely monitored memory pricing remains. With such a large share of global DRAM production controlled by just three companies\u2014Samsung, SK Hynix, and Micron\u2014the potential for future price distortions continues to be a concern for industry stakeholders.</p>",
+        "sender": "writer"
+      }
+    },
+    {
+      "t": 425.2,
+      "node": "editor",
+      "update": {
+        "feedback": "",
+        "revision_count": 1,
+        "last_evaluation": "PASS",
+        "review_flag": null,
+        "sender": "editor"
+      }
+    },
+    {
+      "t": 425.3,
+      "node": "sanitizer",
+      "update": {
+        "draft": "<h2>Dramatic Price Shifts in DRAM: A Decade of Volatility</h2>\n\n<p><strong>Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue.</strong> This dominance has made the memory market highly susceptible to supply chain disruptions and demand fluctuations. Without these major players controlling such a large share, price swings would be less extreme\u2014making it harder to predict cost trends or plan budgets in industries reliant on high-speed data access.</p>\n\n<h3>The Rise of DDR5: A Quadruple Increase</h3>\n\n<p>Standard DDR5 memory prices have risen sharply through 2026. Some 32GB kits climbed from roughly $95 to $250 in mid-2025, reaching as high as $550 to $650 today. This surge has made it increasingly difficult for consumers and businesses alike to upgrade hardware without facing significant cost barriers.</p>\n\n<p>The price increase is driven by a shortage fueled primarily by HBM memory demand. As artificial intelligence applications expand across industries\u2014from healthcare diagnostics to autonomous vehicles\u2014demand for high-bandwidth memory continues to outpace supply, pushing DDR5 prices nearly quadruple in less than two years.</p>\n\n<h3>DRAM Price Volatility: From Spikes to Slumps</h3>\n\n<p><strong>DRAM prices were spiking during periods of high demand and falling when there was low demand and high supply.</strong> These cycles have created a volatile pricing environment where businesses must constantly adapt their purchasing strategies. For example, in Q1 2026, memory prices increased by as much as 80% to 90% compared with the previous quarter (Q4 2025), reflecting an urgent need for semiconductor components.</p>\n\n<p>Conversely, when supply outstripped demand\u2014such as during periods of economic downturn or technological stagnation\u2014DRAM prices dropped significantly. This fluctuation has made it challenging to forecast costs and plan long-term investments in IT infrastructure that depends on memory performance.</p>\n\n<h3>The Role of Geopolitical Tensions</h3>\n\n<p>Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing. These shifts disrupted traditional supply chains used in semiconductor manufacturing, contributing to price instability.</p>\n\n<p>The pandemic further complicated matters by causing profound disruptions to the globalized model of production and distribution. National lockdowns in 2022 slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting memory chip manufacturing worldwide. While some argue that these challenges were not entirely new\u2014suggesting supply chains have always faced risks\u2014it is clear that recent events accelerated existing vulnerabilities.</p>\n\n<h3>DRAM Price Trends: A Market in Flux</h3>\n\n<p><strong>The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand.</strong> This projection underscores the rapid expansion of memory requirements as industries embrace more complex computing solutions. The compound annual growth rate (CAGR) for the sector has been estimated at 10.2% from 2025 to 2035, indicating a sustained upward trajectory despite short-term volatility.</p>\n\n<p>However, sources disagree on when this trend will stabilize. Some claim RAM prices are expected to normalize in the 2024\u20132026 period, while others suggest DRAM prices may continue rising into Q2 2026 with potential surges of up to 70%. This uncertainty highlights how closely tied memory pricing is to broader economic and technological shifts.</p>\n\n<h3>A History of Manipulation: The Price Fixing Scandal</h3>\n\n<p><strong>Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002.</strong> This illegal activity led to significant price increases that lasted well into the early 2010s. The scandal not only damaged reputations but also created long-term distrust among consumers, investors, and regulators regarding market fairness.</p>\n\n<p>The legacy of this manipulation is still felt today in how closely monitored memory pricing remains. With such a large share of global DRAM production controlled by just three companies\u2014Samsung, SK Hynix, and Micron\u2014the potential for future price distortions continues to be a concern for industry stakeholders.</p>",
+        "title": "How did DRAM prices change over the last decade?",
+        "approved_sha256": "3b3c2c178a4ca975d98db3811f0bfc80272ad23d360150443e471ec548982bd5",
+        "sanitizer_removed": [],
+        "unsupported_figures": [
+          "2010"
+        ],
+        "sender": "sanitizer",
+        "review_flag": "NEEDS_REVIEW"
+      }
+    }
+  ],
+  "final": {
+    "timeframe": {
+      "start_year": 2016,
+      "end_year": 2026,
+      "label": "the last decade"
+    },
+    "sub_questions": [
+      {
+        "id": "q1",
+        "question": "What was the overall trend in DRAM prices from 2016 to 2026?",
+        "origin": "planner"
+      },
+      {
+        "id": "q2",
+        "question": "How did global supply and demand dynamics affect DRAM prices during the last decade?",
+        "origin": "planner"
+      },
+      {
+        "id": "q3",
+        "question": "Were there any significant price spikes or drops in DRAM during specific years (e.g., 2020, 2022)?",
+        "origin": "planner"
+      },
+      {
+        "id": "q4",
+        "question": "What role did semiconductor industry advancements play in shaping DRAM pricing trends?",
+        "origin": "planner"
+      },
+      {
+        "id": "q5",
+        "question": "How did major DRAM manufacturers (e.g., Samsung, Micron) influence pricing during this period?",
+        "origin": "planner"
+      },
+      {
+        "id": "q6",
+        "question": "What were the key factors driving DRAM price fluctuations in 2026 compared to 2016?",
+        "origin": "planner"
+      },
+      {
+        "id": "q7",
+        "question": "Did geopolitical events or trade policies impact DRAM pricing trends over the last decade?",
+        "origin": "planner"
+      },
+      {
+        "id": "q8",
+        "question": "What specific impact did the COVID-19 pandemic have on DRAM supply chains and pricing between 2020 and 2022?",
+        "origin": "gap"
+      },
+      {
+        "id": "q9",
+        "question": "How did the transition from DDR4 to DDR5 memory standards influence pricing trends over the last decade?",
+        "origin": "gap"
+      }
+    ],
+    "claims": [
+      {
+        "id": "q1-1",
+        "sub_question_id": "q1",
+        "text": "DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%.",
+        "quote": "DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%.",
+        "source_url": "https://en.unibetter-ic.com/ram-memory-shortage-2026",
+        "source_title": "RAM Memory Shortage 2026 Guide: Price Trend and ...",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q1-2",
+        "sub_question_id": "q1",
+        "text": "DDR5 prices have risen by about 307% over the past year.",
+        "quote": "DDR5 prices have risen by about 307% over the past year, while DDR4 prices have increased by about 158%.",
+        "source_url": "https://www.ersaelectronics.com/blog/memory-chip-price-increase",
+        "source_title": "Memory Chip Price Increase: 2026 Market Trends ...",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q1-3",
+        "sub_question_id": "q1",
+        "text": "Memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025).",
+        "quote": "memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025).",
+        "source_url": "https://en.unibetter-ic.com/ram-memory-shortage-2026",
+        "source_title": "RAM Memory Shortage 2026 Guide: Price Trend and ...",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q2-1",
+        "sub_question_id": "q2",
+        "text": "The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand.",
+        "quote": "The global DRAM market is forecast to approach $400 billion by 2027 as AI and data centre growth accelerate HBM demand.",
+        "source_url": "https://www.globenewswire.com/news-release/2026/08/17/3345981/0/en/the-global-dram-market-report-2026-2036-evaluating-hbm4-ddr5-gddr7-adoption-cmos-bonded-arrays-and-strategies-of-sk-hynix-samsung-micron-and-asml.html",
+        "source_title": "The Global DRAM Market Report 2026\u20132036: Evaluating HBM4,",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q2-2",
+        "sub_question_id": "q2",
+        "text": "DRAM prices have recently turned upward due to increased AI demand and tighter supply.",
+        "quote": "more recently have turned upward in another strong upcycle driven by AI demand and tighter supply.",
+        "source_url": "https://thefusionreport.substack.com/p/what-is-going-on-with-the-dram-shortage",
+        "source_title": "What Is Going On With The DRAM Shortage?",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q3-1",
+        "sub_question_id": "q3",
+        "text": "DRAM prices were spiking during periods of high demand.",
+        "quote": "Prices are _going up_.",
+        "source_url": "https://news.ycombinator.com/item?id=46059737",
+        "source_title": "DRAM prices are spiking, but I don't trust the industry's why",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q3-2",
+        "sub_question_id": "q3",
+        "text": "DRAM prices were kept from dropping during spikes in demand.",
+        "quote": "then during spikes in demand (or alleged spikes in demand) they coordinate to keep the price from dropping.",
+        "source_url": "https://news.ycombinator.com/item?id=46059737",
+        "source_title": "DRAM prices are spiking, but I don't trust the industry's why",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q3-3",
+        "sub_question_id": "q3",
+        "text": "DRAM prices were falling during periods of low demand and high supply.",
+        "quote": "When they were doing price fixing it was because there was a glut of supply and demand was tanking. Prices were _falling_ and they coordinated to keep prices from falling less.",
+        "source_url": "https://news.ycombinator.com/item?id=46059737",
+        "source_title": "DRAM prices are spiking, but I don't trust the industry's why",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q3-4",
+        "sub_question_id": "q3",
+        "text": "DRAM prices are expected to normalize in the 2024\u20132026 period.",
+        "quote": "When Will RAM Prices Drop? Global Memory Market Outlook 2024\u20132026",
+        "source_url": "https://www.bacloud.com/en/blog/230/when-will-ram-prices-drop-global-memory-market-outlook-20242026.html",
+        "source_title": "When Will RAM Prices Drop? Global Memory Market",
+        "published": "2025-11-12",
+        "confidence": 0.8
+      },
+      {
+        "id": "q4-1",
+        "sub_question_id": "q4",
+        "text": "Semiconductor price trends, including DRAM, have shown breaks in trends around specific years, indicating significant shifts in pricing dynamics.",
+        "quote": "We find compelling statistical evidence of breaks in MPU price trends in 1994 and 2001 and reasonably strong evidence of similar breaks for DRAM prices.",
+        "source_url": "https://www.federalreserve.gov/pubs/feds/2006/200644/index.html",
+        "source_title": "FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress",
+        "published": null,
+        "confidence": 0.9
+      },
+      {
+        "id": "q4-2",
+        "sub_question_id": "q4",
+        "text": "DRAM pricing has been influenced by worldwide supply-demand conditions, leading to wide swings in prices.",
+        "quote": "The role for markups is especially pronounced for DRAM chips, which are subject to wide swings in worldwide supply-demand conditions.",
+        "source_url": "https://www.federalreserve.gov/pubs/feds/2006/200644/index.html",
+        "source_title": "FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress",
+        "published": null,
+        "confidence": 0.8
+      },
+      {
+        "id": "q4-3",
+        "sub_question_id": "q4",
+        "text": "The DRAM market is projected to grow significantly, with a compound annual growth rate (CAGR) of 10.2% from 2025 to 2035.",
+        "quote": "The DRAM industry is projected to grow from 144.47 USD Billion in 2025 to 381.67 USD Billion by 2035, exhibiting a compound annual growth rate (CAGR) of 10.2% during the forecast period 2025 - 2035",
+        "source_url": "https://www.marketresearchfuture.com/reports/dram-market-978",
+        "source_title": "DRAM Market Size, Share, Analysis & Forecast to 2035",
+        "published": null,
+        "confidence": 0.9
+      },
+      {
+        "id": "q4-4",
+        "sub_question_id": "q4",
+        "text": "Technological advancements and increasing demand for high-performance computing solutions are driving the DRAM market.",
+        "quote": "The Dynamic RAM (DRAM) market is currently experiencing a transformative phase, driven by advancements in technology and increasing demand for high-performance computing solutions.",
+        "source_url": "https://www.marketresearchfuture.com/reports/dram-market-978",
+        "source_title": "DRAM Market Size, Share, Analysis & Forecast to 2035",
+        "published": null,
+        "confidence": 0.8
+      },
+      {
+        "id": "q5-1",
+        "sub_question_id": "q5",
+        "text": "Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002.",
+        "quote": "The decreased production of DRAM has led to massively marked-up prices for DRAM purchasers, driving up electronics prices. The lawsuit points out that between 1998 and 2002, these same three companies, Samsung, Hynix (the predecessor of SK Hynix), and Micron, took part in a criminal conspiracy to fi",
+        "source_url": "https://www.polygon.com/ram-manufacturers-sued-supply-price-fixing",
+        "source_title": "Major RAM manufacturers sued for manipulating prices and demand",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q5-2",
+        "sub_question_id": "q5",
+        "text": "DRAM price fixing caused prices to skyrocket through 2016 and 2017, with the price of DRAM nearly tripling between June 2016 and January 2018.",
+        "quote": "Between June 2016 and January 2018, the price of DRAM nearly tripled.",
+        "source_url": "https://en.wikipedia.org/wiki/DRAM_price_fixing_scandal",
+        "source_title": "DRAM industry price fixing - Wikipedia",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q5-3",
+        "sub_question_id": "q5",
+        "text": "Samsung and Micron raised DDR4 prices by up to 30% in the fourth quarter of 2025.",
+        "quote": "Samsung is reportedly preparing one of its most aggressive memory pricing strategies in recent years amid surging demand from the AI sector. According to [TrendForce reports](https://www.trendforce.com/news/2025/09/22/news-samsung-reportedly-plans-q4-memory-price-hikes-dram-up-30-nand-up-10/), the c",
+        "source_url": "https://sourceability.com/post/memory-price-hikes-and-the-labor-crisis-reshape-supply-chains",
+        "source_title": "Samsung increases DRAM prices after Micron | Sourceability",
+        "published": "2025-10-03",
+        "confidence": 1.0
+      },
+      {
+        "id": "q5-4",
+        "sub_question_id": "q5",
+        "text": "Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue.",
+        "quote": "Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue.",
+        "source_url": "https://www.polygon.com/ram-manufacturers-sued-supply-price-fixing",
+        "source_title": "Major RAM manufacturers sued for manipulating prices and demand",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q7-1",
+        "sub_question_id": "q7",
+        "text": "Geopolitical rivalry between the U.S. and China has introduced persistent economic shocks that may have permanently altered the time-series properties of economic variables.",
+        "quote": "This paper analyzes the long-memory properties in U.S. semiconductor industry production and price series. The analysis is framed within the context of the U.S.-China geopolitical rivalry, which is hypothesized to present a series of persistent economic shocks.",
+        "source_url": "https://link.springer.com/article/10.1007/s40812-026-00414-2",
+        "source_title": "Geopolitical rivalry and structural change in semiconductor markets: evidence from long-memory dynamics | Journal of Industrial and Business Economics | Springer Nature Link",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q7-2",
+        "sub_question_id": "q7",
+        "text": "Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing.",
+        "quote": "Geopolitical factors have affected global trade only after 2018, mostly driven by deteriorating geopolitical relations between the US and China. Trade between geopolitically aligned countries, or friend-shoring, has increased since 2018, while trade between rivals has decreased.",
+        "source_url": "https://cepr.org/voxeu/columns/how-geopolitics-changing-trade",
+        "source_title": "How geopolitics is changing trade | CEPR",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q8-1",
+        "sub_question_id": "q8",
+        "text": "The pandemic caused profound disruptions to the globalized model of supply chains, including those in the IT and Communication sectors.",
+        "quote": "The COVID-19 global pandemic caused profound disruptions to the globalized model of supply chains, including those in the IT and Communication sectors.",
+        "source_url": "https://www.cisa.gov/sites/default/files/publications/lessons-learned-during-covid-19-pandemic_508_1.pdf",
+        "source_title": "Lessons Learned During the COVID-19 Pandemic",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q8-2",
+        "sub_question_id": "q8",
+        "text": "National lockdowns in 2022 slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting manufacturing.",
+        "quote": "in 2022, national lockdowns slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting manufacturing as a result.",
+        "source_url": "https://www.ey.com/en_us/insights/supply-chain/how-covid-19-impacted-supply-chains-and-what-comes-next",
+        "source_title": "How COVID-19 impacted supply chains and what comes next | EY - US",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q8-3",
+        "sub_question_id": "q8",
+        "text": "The pandemic did not necessarily create any new challenges for supply chains.",
+        "quote": "However, the pandemic did not necessarily create any new challenges for supply chains.",
+        "source_url": "https://www.ey.com/en_us/insights/supply-chain/how-covid-19-impacted-supply-chains-and-what-comes-next",
+        "source_title": "How COVID-19 impacted supply chains and what comes next | EY - US",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q9-1",
+        "sub_question_id": "q9",
+        "text": "Standard DDR5 memory prices have risen sharply through 2026, with some 32GB kits climbing from roughly $95 to $250 in mid-2025 to $550 to $650 today.",
+        "quote": "Standard DDR5 memory prices have risen sharply through 2026, with some 32GB kits climbing from roughly $95 to $250 in mid-2025 to $550 to $650 today",
+        "source_url": "https://info.fusionww.com/blog/why-ddr5-prices-have-nearly-quadrupled-in-2026",
+        "source_title": "Why DDR5 Prices Have Nearly Quadrupled in 2026",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q9-2",
+        "sub_question_id": "q9",
+        "text": "HBM's share of global DRAM wafer production has grown to an estimated 23% in 2026, up from about 8% in 2024.",
+        "quote": "HBM's share of global DRAM wafer production has grown to an estimated 23% in 2026, up from about 8% in 2024",
+        "source_url": "https://info.fusionww.com/blog/why-ddr5-prices-have-nearly-quadrupled-in-2026",
+        "source_title": "Why DDR5 Prices Have Nearly Quadrupled in 2026",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q9-3",
+        "sub_question_id": "q9",
+        "text": "Samsung, SK Hynix, and Micron together control roughly 95% of global DRAM production.",
+        "quote": "Samsung, SK Hynix, and Micron together control roughly 95% of global DRAM production",
+        "source_url": "https://info.fusionww.com/blog/why-ddr5-prices-have-nearly-quadrupled-in-2026",
+        "source_title": "Why DDR5 Prices Have Nearly Quadrupled in 2026",
+        "published": null,
+        "confidence": 1.0
+      },
+      {
+        "id": "q9-4",
+        "sub_question_id": "q9",
+        "text": "DDR5 prices have nearly quadrupled in 2026 due to a shortage driven by HBM memory demand.",
+        "quote": "DDR5 prices have nearly quadrupled in 2026",
+        "source_url": "https://info.fusionww.com/blog/why-ddr5-prices-have-nearly-quadrupled-in-2026",
+        "source_title": "Why DDR5 Prices Have Nearly Quadrupled in 2026",
+        "published": null,
+        "confidence": 1.0
+      }
+    ],
+    "claim_verdicts": {
+      "q1-1": {
+        "status": "supported",
+        "reason": "The quote matches the claim word-for-word, stating that DRAM prices are expected to rise in Q2 2026 by up to 70%."
+      },
+      "q1-2": {
+        "status": "supported",
+        "reason": "The quote directly supports the claim that DDR5 prices have risen by about 307% over the past year."
+      },
+      "q1-3": {
+        "status": "supported",
+        "reason": "The quote matches the claim regarding the sharp rise in memory prices in Q1 2026 compared to Q4 2025."
+      },
+      "q2-1": {
+        "status": "supported",
+        "reason": "The quote directly matches the claim regarding the DRAM market forecast and the drivers behind it."
+      },
+      "q2-2": {
+        "status": "supported",
+        "reason": "The quote directly supports the claim that DRAM prices have turned upward due to AI demand and tighter supply."
+      },
+      "q3-1": {
+        "status": "supported",
+        "reason": "The quote directly states that prices are going up during periods described as spiking."
+      },
+      "q3-2": {
+        "status": "unsupported",
+        "reason": "The quote refers to keeping prices from dropping *less* or coordinating during a glut of supply, not keeping prices from dropping during spikes in demand."
+      },
+      "q3-3": {
+        "status": "supported",
+        "reason": "The quote explicitly mentions that prices were falling when there was a glut of supply and demand was tanking."
+      },
+      "q3-4": {
+        "status": "supported",
+        "reason": "The quote provides the outlook period of 2024\u20132026 for when RAM prices will drop/normalize."
+      },
+      "q4-1": {
+        "status": "supported",
+        "reason": "The quote directly supports the claim that DRAM prices have shown breaks in trends, indicating shifts in pricing dynamics."
+      },
+      "q4-2": {
+        "status": "supported",
+        "reason": "The quote confirms that DRAM chips are subject to wide swings in worldwide supply-demand conditions, which influence markups and pricing."
+      },
+      "q4-3": {
+        "status": "supported",
+        "reason": "The quote explicitly provides the projected growth figures and CAGR of 10.2% from 2025 to 2035 for the DRAM industry."
+      },
+      "q4-4": {
+        "status": "supported",
+        "reason": "The quote states that the DRAM market is being driven by technological advancements and increasing demand for high-performance computing solutions."
+      },
+      "q5-1": {
+        "status": "supported",
+        "reason": "The quote directly states that Samsung, Hynix, and Micron took part in a criminal conspiracy to fix DRAM prices between 1998 and 2002."
+      },
+      "q5-2": {
+        "status": "supported",
+        "reason": "The quote confirms that the price of DRAM nearly tripled between June 2016 and January 2018."
+      },
+      "q5-3": {
+        "status": "unsupported",
+        "reason": "The quote mentions Samsung planning memory price hikes up to 30%, but does not explicitly state that Micron also raised DDR4 prices by up to 30% in Q4 2025."
+      },
+      "q5-4": {
+        "status": "supported",
+        "reason": "The quote matches the claim verbatim, stating that Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue."
+      },
+      "q7-1": {
+        "status": "unsupported",
+        "reason": "The quote states that the paper hypothesizes persistent economic shocks, whereas the claim states as a fact that they have been introduced and permanently altered time-series properties."
+      },
+      "q7-2": {
+        "status": "supported",
+        "reason": "The quote directly confirms that geopolitical tensions between the U.S. and China have affected trade since 2018, decreasing trade between rivals and increasing friend-shoring."
+      },
+      "q8-1": {
+        "status": "supported",
+        "reason": "The quote directly matches the claim regarding the pandemic causing profound disruptions to supply chains in the IT and Communication sectors."
+      },
+      "q8-2": {
+        "status": "supported",
+        "reason": "The quote directly supports the claim that national lockdowns in 2022 slowed or stopped the flow of goods and disrupted manufacturing."
+      },
+      "q8-3": {
+        "status": "supported",
+        "reason": "The quote directly matches the claim that the pandemic did not necessarily create new challenges for supply chains."
+      },
+      "q9-1": {
+        "status": "supported",
+        "reason": "The quote matches the claim word-for-word, providing the exact same figures, dates, and pricing details."
+      },
+      "q9-2": {
+        "status": "supported",
+        "reason": "The quote provides the exact same percentage and year figures regarding HBM's share of global DRAM wafer production."
+      },
+      "q9-3": {
+        "status": "supported",
+        "reason": "The quote matches the claim word-for-word, stating the same 95% control statistic for the three companies."
+      },
+      "q9-4": {
+        "status": "supported",
+        "reason": "The quote explicitly supports the core statement that DDR5 prices have nearly quadrupled in 2026."
+      }
+    },
+    "contradictions": [
+      {
+        "claim_ids": [
+          "q3-4",
+          "q1-1"
+        ],
+        "note": "Claim q3-4 states that RAM prices are expected to normalize in the 2024-2026 period, whereas claim q1-1 states that DRAM prices are expected to continue rising in Q2 2026 with a potential surge of up to 70%."
+      }
+    ],
+    "gaps": [
+      {
+        "question": "How did the shift from DDR4 to DDR5 specifically impact manufacturing capacities and pricing transition phases between 2020 and 2025?",
+        "reason": "Although the prompts mention the transition of memory standards, there is no specific data explaining how manufacturers converted production lines from DDR4 to DDR5 and how that transition phase directly impacted consumer pricing prior to the 2026 surge.",
+        "important": false
+      }
+    ],
+    "audit_status": "PASSED",
+    "audit_feedback": "23 supported claims across 8 sub questions",
+    "audit_loops": 2,
+    "research_notes": [
+      "- DRAM prices are expected to continue rising in Q2 2026, potentially surging by as much as 70%. (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+      "- DDR5 prices have risen by about 307% over the past year. (Source: Memory Chip Price Increase: 2026 Market Trends ...)",
+      "- Memory prices rose sharply in Q1 2026, increasing by 80% to 90% compared with the previous quarter (Q4 2025). (Source: RAM Memory Shortage 2026 Guide: Price Trend and ...)",
+      "- The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand. (Source: The Global DRAM Market Report 2026\u20132036: Evaluating HBM4,)",
+      "- DRAM prices have recently turned upward due to increased AI demand and tighter supply. (Source: What Is Going On With The DRAM Shortage?)",
+      "- DRAM prices were spiking during periods of high demand. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+      "- DRAM prices were falling during periods of low demand and high supply. (Source: DRAM prices are spiking, but I don't trust the industry's why)",
+      "- DRAM prices are expected to normalize in the 2024\u20132026 period. (Source: When Will RAM Prices Drop? Global Memory Market)",
+      "- Semiconductor price trends, including DRAM, have shown breaks in trends around specific years, indicating significant shifts in pricing dynamics. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+      "- DRAM pricing has been influenced by worldwide supply-demand conditions, leading to wide swings in prices. (Source: FRB: Finance and Economics Discussion Series: Screen Reader Version - Shifting Trends in Semiconductor Prices and the Pace of Technological Progress)",
+      "- The DRAM market is projected to grow significantly, with a compound annual growth rate (CAGR) of 10.2% from 2025 to 2035. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+      "- Technological advancements and increasing demand for high-performance computing solutions are driving the DRAM market. (Source: DRAM Market Size, Share, Analysis & Forecast to 2035)",
+      "- Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+      "- DRAM price fixing caused prices to skyrocket through 2016 and 2017, with the price of DRAM nearly tripling between June 2016 and January 2018. (Source: DRAM industry price fixing - Wikipedia)",
+      "- Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue. (Source: Major RAM manufacturers sued for manipulating prices and demand)",
+      "- Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing. (Source: How geopolitics is changing trade | CEPR)",
+      "- The pandemic caused profound disruptions to the globalized model of supply chains, including those in the IT and Communication sectors. (Source: Lessons Learned During the COVID-19 Pandemic)",
+      "- National lockdowns in 2022 slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting manufacturing. (Source: How COVID-19 impacted supply chains and what comes next | EY - US)",
+      "- The pandemic did not necessarily create any new challenges for supply chains. (Source: How COVID-19 impacted supply chains and what comes next | EY - US)",
+      "- Standard DDR5 memory prices have risen sharply through 2026, with some 32GB kits climbing from roughly $95 to $250 in mid-2025 to $550 to $650 today. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+      "- HBM's share of global DRAM wafer production has grown to an estimated 23% in 2026, up from about 8% in 2024. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+      "- Samsung, SK Hynix, and Micron together control roughly 95% of global DRAM production. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+      "- DDR5 prices have nearly quadrupled in 2026 due to a shortage driven by HBM memory demand. (Source: Why DDR5 Prices Have Nearly Quadrupled in 2026)",
+      "Sources disagree: Claim q3-4 states that RAM prices are expected to normalize in the 2024-2026 period, whereas claim q1-1 states that DRAM prices are expected to continue rising in Q2 2026 with a potential surge of up to 70%."
+    ],
+    "branch_errors": [
+      {
+        "sub_question_id": "q6",
+        "error": "no quotable claims"
+      }
+    ],
+    "draft": "<h2>Dramatic Price Shifts in DRAM: A Decade of Volatility</h2>\n\n<p><strong>Samsung, SK Hynix, and Micron account for more than 90% of global DRAM revenue.</strong> This dominance has made the memory market highly susceptible to supply chain disruptions and demand fluctuations. Without these major players controlling such a large share, price swings would be less extreme\u2014making it harder to predict cost trends or plan budgets in industries reliant on high-speed data access.</p>\n\n<h3>The Rise of DDR5: A Quadruple Increase</h3>\n\n<p>Standard DDR5 memory prices have risen sharply through 2026. Some 32GB kits climbed from roughly $95 to $250 in mid-2025, reaching as high as $550 to $650 today. This surge has made it increasingly difficult for consumers and businesses alike to upgrade hardware without facing significant cost barriers.</p>\n\n<p>The price increase is driven by a shortage fueled primarily by HBM memory demand. As artificial intelligence applications expand across industries\u2014from healthcare diagnostics to autonomous vehicles\u2014demand for high-bandwidth memory continues to outpace supply, pushing DDR5 prices nearly quadruple in less than two years.</p>\n\n<h3>DRAM Price Volatility: From Spikes to Slumps</h3>\n\n<p><strong>DRAM prices were spiking during periods of high demand and falling when there was low demand and high supply.</strong> These cycles have created a volatile pricing environment where businesses must constantly adapt their purchasing strategies. For example, in Q1 2026, memory prices increased by as much as 80% to 90% compared with the previous quarter (Q4 2025), reflecting an urgent need for semiconductor components.</p>\n\n<p>Conversely, when supply outstripped demand\u2014such as during periods of economic downturn or technological stagnation\u2014DRAM prices dropped significantly. This fluctuation has made it challenging to forecast costs and plan long-term investments in IT infrastructure that depends on memory performance.</p>\n\n<h3>The Role of Geopolitical Tensions</h3>\n\n<p>Geopolitical tensions between the U.S. and China have affected global trade flows since 2018, with trade between rivals decreasing and friend-shoring increasing. These shifts disrupted traditional supply chains used in semiconductor manufacturing, contributing to price instability.</p>\n\n<p>The pandemic further complicated matters by causing profound disruptions to the globalized model of production and distribution. National lockdowns in 2022 slowed or even temporarily stopped the flow of raw materials and finished goods, disrupting memory chip manufacturing worldwide. While some argue that these challenges were not entirely new\u2014suggesting supply chains have always faced risks\u2014it is clear that recent events accelerated existing vulnerabilities.</p>\n\n<h3>DRAM Price Trends: A Market in Flux</h3>\n\n<p><strong>The global DRAM market is forecast to approach $400 billion by 2027 due to AI and data centre growth accelerating HBM demand.</strong> This projection underscores the rapid expansion of memory requirements as industries embrace more complex computing solutions. The compound annual growth rate (CAGR) for the sector has been estimated at 10.2% from 2025 to 2035, indicating a sustained upward trajectory despite short-term volatility.</p>\n\n<p>However, sources disagree on when this trend will stabilize. Some claim RAM prices are expected to normalize in the 2024\u20132026 period, while others suggest DRAM prices may continue rising into Q2 2026 with potential surges of up to 70%. This uncertainty highlights how closely tied memory pricing is to broader economic and technological shifts.</p>\n\n<h3>A History of Manipulation: The Price Fixing Scandal</h3>\n\n<p><strong>Samsung, Micron, and Hynix (predecessor of SK Hynix) were involved in a criminal conspiracy to fix DRAM prices between 1998 and 2002.</strong> This illegal activity led to significant price increases that lasted well into the early 2010s. The scandal not only damaged reputations but also created long-term distrust among consumers, investors, and regulators regarding market fairness.</p>\n\n<p>The legacy of this manipulation is still felt today in how closely monitored memory pricing remains. With such a large share of global DRAM production controlled by just three companies\u2014Samsung, SK Hynix, and Micron\u2014the potential for future price distortions continues to be a concern for industry stakeholders.</p>",
+    "title": "How did DRAM prices change over the last decade?",
+    "last_evaluation": "PASS",
+    "feedback": "",
+    "review_flag": "NEEDS_REVIEW",
+    "unsupported_figures": [
+      "2010"
+    ],
+    "run_status": null
+  }
+}

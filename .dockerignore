@@ -11,14 +11,18 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
-# Not needed at runtime
+# Not needed at runtime: the image runs app.py and src/ only
 .git/
 .github/
 .vscode/
 .claude/
-tests/
 claude.md
+docs/
+tests/
+evals/
+demo/
+scripts/
+assets/
 README.md
-temp.txt
-auth_blogger.py
 poetry.toml
+test-preferences.json

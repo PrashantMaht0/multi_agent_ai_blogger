@@ -1,6 +1,6 @@
 """The deterministic safety gate that cleans a draft before publishing."""
 
-from src.agents.sanitize import clean_title, sanitize_html
+from src.tools.sanitize import clean_title, sanitize_html
 
 
 def test_strips_the_script_tag_that_reached_the_baseline_draft():

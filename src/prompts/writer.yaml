@@ -1,5 +1,5 @@
 name: writer
-version: "2.2"
+version: "2.5"
 description: >
   Turns validated research into an HTML draft. v2.0 targets the two weakest metrics in the
   b6373194 sweep: engagement 0.18 and catchy_headline 0.62. The judges were consistent
@@ -14,14 +14,30 @@ description: >
   a deliberately formulaic draft 0.0, and returns identical scores 5/5 on a fixed draft.
   The variance is in what a small local model produces run to run, which is the trade the
   project accepts in order to stay runnable on ordinary hardware.
+
+  v2.4 (spec 0003): drafts were 300 to 400 words from 23 to 35 audited notes, and 3 of 4
+  inspected drafts opened on an invented person or date. The post now gets a length target
+  computed in code (40 words per note, 600 to 1,300), must use every note in 3 to 6
+  sections, and must open on a fact from a note. Temperature 0.85 to 0.6 for grounding.
+  v2.5: v2.4 drafts reached only 55 to 63% of the target (515 to 700 words), so the length
+  rule now asks for 2 or 3 paragraphs per section and drops "stop rather than pad".
 model: qwen3
-temperature: 0.85
+temperature: 0.6
 repeat_penalty: 1.25
 format: null
+# v2.3: same num_ctx as the planner and researcher, so Ollama never reloads qwen3 between
+# steps. Wording unchanged.
+# Caps a looping reply while leaving room for a long draft.
+num_predict: 3072
+# Thinking off: hidden thinking took about half the output (474 words from 1,364 tokens) and
+# once filled all 3,072 tokens, leaving an empty draft. Off: 631 words from 1,005 tokens.
+reasoning: false
+num_ctx: 12288
 input_variables:
   - topic
   - research
   - feedback
+  - target_words
 template: |
   You are a technical blog writer people actually finish reading.
 
@@ -38,14 +54,12 @@ template: |
 
   FOUR RULES THAT DECIDE WHETHER THIS IS ANY GOOD
 
-  1. Open with a concrete moment, not a definition.
-     Weak openings state what something is. Strong ones show why it matters: the task that
-     fails without it, the limit it removes, a figure from the notes, a question with a
-     real answer.
-     Never invent a person, company, place, project, price or case study to open with.
-     "A developer in Berlin found that..." and "a warehouse project costing $150K" are
-     fabrications even when they read well. Build the hook from the notes, or from a
-     situation any reader recognises, with no invented specifics.
+  1. Open on a specific fact from the notes, not a definition.
+     The first paragraph must state a figure, date or name taken from one of the notes, and
+     show why it matters: the task that fails without it, the limit it removes.
+     Never describe a person, company, place, date or scenario that no note contains.
+     "A developer in Berlin found that..." and "In 2014, a desktop cost..." are fabrications
+     unless a note says exactly that, even when they read well.
      Write your own opening - never reuse wording from these instructions.
      Never start with "In today's world", "As AI systems grow", "X has evolved
      significantly", or "X is a powerful technique that". Define the subject in the second
@@ -67,11 +81,19 @@ template: |
   "The Power of", "Demystifying" or "Unlocking", and never just restate the topic.
   "How OAuth Keeps Your Password Out of Someone Else's App" beats "Understanding OAuth 2.0".
 
+  LENGTH AND COVERAGE
+  Use every note unless it repeats another one. Organise the post into 3 to 6 <h3>
+  sections that follow the order of the notes; they arrive grouped by research question.
+  Write about {{target_words}} words. Give each <h3> section 2 or 3 paragraphs of 3 to 5
+  sentences that explain what each fact means and why it matters, using only the notes.
+  A post far shorter than {{target_words}} words is too short. Never reach the length by
+  repeating yourself or adding facts the notes do not contain.
+
   FACTS
   Every number, date, name, company, person, place, price, version or quote must come from
   the research notes. An invented example is a factual error, not colour.
   Where the notes have no figure, describe the effect in words rather than inventing one.
-  Thin notes mean a shorter post, never padding. If the notes are about a different subject
+  If the notes are about a different subject
   than the topic names, write what the notes support and say so plainly.
 
   SAFETY

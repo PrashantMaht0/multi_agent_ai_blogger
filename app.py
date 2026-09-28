@@ -3,6 +3,7 @@
 import os
 import atexit
 import threading
+import time
 import uuid
 import gradio as gr
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.orchestrator.graph import build_graph
+from src.state import initial_state
 
 app_graph = build_graph(enable_hitl=True)
 
@@ -119,26 +121,7 @@ def start_generation(topic: str, request: gr.Request):
     config = {"configurable": {"thread_id": thread_id}}
     stop_flag = _register_run(thread_id, request.session_hash)
 
-    initial_state = {
-        "topic": topic,
-        "research_notes": [],
-        "research_error": None,
-        "research_attempts": 0,
-        "raw_sources": [],
-        "validation_status": None,
-        "validation_feedback": None,
-        "run_status": None,
-        "sanitizer_removed": [],
-        "draft": "",
-        "title": "",
-        "approved_sha256": None,
-        "review_flag": None,
-        "feedback": "",
-        "last_evaluation": None,
-        "blogger_url": None,
-        "revision_count": 0,
-        "sender": "user"
-    }
+    state = initial_state(topic)
 
     logs = f"[SESSION] Thread ID: {thread_id}\n"
     logs += f"[TOPIC] {topic}\n\n"
@@ -149,22 +132,40 @@ def start_generation(topic: str, request: gr.Request):
                        gr.update(interactive=False), gr.update(interactive=False))
     yield logs, current_draft, latest_feedback, "", *running_buttons, thread_id
 
+    research_started = None
     try:
-        for event in app_graph.stream(initial_state, config=config, stream_mode="updates"):
+        for event in app_graph.stream(state, config=config, stream_mode="updates"):
             for node_name, state_update in event.items():
                 logs += f"[{node_name.upper()}] Node completed.\n"
 
-                if node_name == "researcher":
-                    notes_count = len(state_update.get("research_notes", []))
-                    research_error = state_update.get("research_error")
-                    logs += f"   - Gathered research items: {notes_count}\n"
-                    if research_error:
-                        logs += f"   - Search failed: {research_error}\n"
-                    logs += "\n"
+                if node_name == "planner":
+                    research_started = time.monotonic()
+                    timeframe = state_update.get("timeframe") or {}
+                    logs += (f"[PLAN] {len(state_update.get('sub_questions', []))} sub questions, "
+                             f"timeframe {timeframe.get('label', 'any time')}\n\n")
 
-                elif node_name == "validator":
-                    val_status = state_update.get("validation_status", "UNKNOWN")
-                    logs += f"   - Status: {val_status}\n\n"
+                elif node_name == "research_branch":
+                    for error in state_update.get("branch_errors", []):
+                        logs += f"[BRANCH] {error['sub_question_id']} failed: {error['error']}\n"
+                    claims = state_update.get("claims", [])
+                    if claims:
+                        logs += f"[BRANCH] {claims[0]['sub_question_id']}: {len(claims)} claims\n"
+
+                elif node_name == "auditor":
+                    if research_started is not None:
+                        logs += f"[TIMING] research {time.monotonic() - research_started:.1f}s\n"
+                        research_started = None
+                    for error in state_update.get("branch_errors", []):
+                        logs += f"[BRANCH] {error['sub_question_id']} failed: {error['error']}\n"
+                    logs += f"[AUDIT] {state_update.get('audit_status')}: {state_update.get('audit_feedback')}\n\n"
+
+                elif node_name == "cross_check":
+                    gaps = state_update.get("gaps", [])
+                    logs += (f"[CROSS CHECK] {len(state_update.get('contradictions', []))} contradictions, "
+                             f"{len(gaps)} gaps ({sum(g['important'] for g in gaps)} important)\n\n")
+
+                elif node_name == "gap_planner":
+                    logs += f"[GAP] researching {len(state_update.get('sub_questions', []))} more sub questions\n\n"
 
                 elif node_name == "writer":
                     current_draft = state_update.get("draft", current_draft)
@@ -197,17 +198,25 @@ def start_generation(topic: str, request: gr.Request):
                 yield logs, current_draft, latest_feedback, "Run stopped.", *terminal, ""
                 return
 
-        # A pending 'publisher' step means the run is waiting for approval.
+        # A pending 'publish' step means the run is waiting for approval.
         state_snapshot = app_graph.get_state(config)
         final_state = state_snapshot.values
 
-        if state_snapshot.next and "publisher" in state_snapshot.next:
+        if state_snapshot.next and "publish" in state_snapshot.next:
             _paused_threads.add(thread_id)
             paused = (gr.update(interactive=False), gr.update(interactive=False),
                       gr.update(interactive=True), gr.update(interactive=True))
             if final_state.get("review_flag") == "NEEDS_REVIEW":
-                logs += "[PAUSED] NEEDS REVIEW: the editor still failed this draft after its last revision.\n"
-                status = f"NEEDS REVIEW - editor still failing: {latest_feedback}"
+                reasons = []
+                if final_state.get("last_evaluation") == "FAIL":
+                    logs += "[PAUSED] NEEDS REVIEW: the editor still failed this draft after its last revision.\n"
+                    reasons.append(f"editor still failing: {latest_feedback}")
+                figures = final_state.get("unsupported_figures") or []
+                if figures:
+                    figures_line = f"figures not in the research: {', '.join(figures)}"
+                    logs += f"[PAUSED] NEEDS REVIEW: {figures_line}\n"
+                    reasons.append(figures_line)
+                status = "NEEDS REVIEW: " + "; ".join(reasons)
             else:
                 logs += "[PAUSED] Draft approved by Editor. Awaiting human review.\n"
                 status = "Ready for human review."
@@ -218,8 +227,8 @@ def start_generation(topic: str, request: gr.Request):
                     gr.update(interactive=False), gr.update(interactive=True))
 
         if final_state.get("run_status") == "FAILED":
-            reason = final_state.get("research_error") or final_state.get("validation_feedback") or "Unknown failure."
-            logs += f"[FAILED] Research could not be validated. Reason: {reason}\n"
+            reason = final_state.get("audit_feedback") or "Unknown failure."
+            logs += f"[FAILED] Research did not pass the audit. Reason: {reason}\n"
             _discard_thread(thread_id)
             yield logs, current_draft, latest_feedback, f"Run failed: {reason}", *terminal, ""
             return
@@ -253,9 +262,18 @@ def approve_and_publish(thread_id: str, existing_logs: str):
     blogger_url = ""
 
     snapshot = app_graph.get_state(config)
-    if not (snapshot.next and "publisher" in snapshot.next):
-        logs += ("[ERROR] This checkpoint is no longer paused before the publisher "
+    if not (snapshot.next and "publish" in snapshot.next):
+        logs += ("[ERROR] This checkpoint is no longer paused before publishing "
                  "(it was cancelled or already published). Start a new run.\n")
+        _release_run(thread_id)
+        yield logs, "Nothing to publish.", gr.update(interactive=False), gr.update(interactive=True)
+        return
+
+    # Read the raw checkpoint: get_state() fills reducer fields with [] even when never saved.
+    saved = app_graph.checkpointer.get_tuple(config).checkpoint["channel_values"]
+    if "sub_questions" not in saved:
+        logs += ("[ERROR] This paused run comes from an older version of the app and "
+                 "cannot be resumed. Start a new run.\n")
         _release_run(thread_id)
         yield logs, "Nothing to publish.", gr.update(interactive=False), gr.update(interactive=True)
         return
@@ -266,13 +284,13 @@ def approve_and_publish(thread_id: str, existing_logs: str):
         published = False
         for event in app_graph.stream(None, config=config, stream_mode="updates"):
             for node_name, state_update in event.items():
-                if node_name == "publisher":
+                if node_name == "publish":
                     published = True
                     blogger_url = state_update.get("blogger_url", "URL not returned")
                     logs += f"[PUBLISHED] Live URL: {blogger_url}\n"
 
         if not published:
-            logs += "[WARN] Publisher node produced no output.\n"
+            logs += "[WARN] Publish step produced no output.\n"
 
         logs += "[COMPLETE] Workflow finished successfully.\n"
         _release_run(thread_id)
@@ -294,7 +312,7 @@ def _load_theme():
 
 # Tighten the theme's corner radii, which otherwise clip text.
 _CSS = """
-.gradio-container { padding: 20px 24px !important; max-width: 1400px; }
+.gradio-container { padding: 20px 24px !important; max-width: 100% !important; }
 .gradio-container { --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
                     --radius-xl: 10px; --radius-xxl: 12px; }
 .block { overflow: visible !important; }
@@ -307,7 +325,7 @@ with gr.Blocks(title="AI Blogger - Multi-Agent Studio") as demo:
     gr.Markdown(
         """
         # Multi-Agent Blogger Studio
-        **LangGraph Orchestration** with qwen3 (Researcher, Writer), llama3.1:8b (Editor) & Gemini (Validator).
+        **LangGraph Orchestration** with qwen3 (Planner, Researcher, Writer), llama3.1:8b (Editor) & Gemini (Auditor, Cross check).
         """
     )
 

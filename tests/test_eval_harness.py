@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-import tests.eval_harness as harness
+import evals.eval_harness as harness
 
-DATASET = json.loads((Path(__file__).parent / "dataset.json").read_text())
+DATASET = json.loads((Path(__file__).parent.parent / "evals" / "dataset.json").read_text())
 
 GOOD_OUTPUTS = {
     "draft": "<h2>What is MCP?</h2><p>MCP is an open standard.</p>",
@@ -195,27 +195,35 @@ def test_judge_prompts_do_not_anchor_scores_with_example_values():
         )
 
 
-def test_cached_research_skips_the_search_and_new_research_is_cached(monkeypatch, tmp_path):
-    """Repeat sweeps reuse validated notes instead of spending search credits."""
-    seen = []
+def test_cache_replays_a_topic_plan_and_reuses_searches(monkeypatch, tmp_path):
+    """A cached topic replays its plan, so its searches hit the cache and spend no credits."""
+    import src.agents.planner as planner
+    from src.tools import search
 
-    class FakeGraph:
-        def invoke(self, state):
-            seen.append(state)
-            return {**state, "research_notes": state["research_notes"] or ["fresh"],
-                    "validation_status": "VALIDATED", "draft": "<p>x</p>"}
+    calls = {"plan": 0, "search": 0}
 
-    monkeypatch.setattr(harness, "eval_graph", FakeGraph())
+    def fake_plan(topic):
+        calls["plan"] += 1
+        return {"start_year": None, "end_year": None, "label": "any time"}, [
+            {"id": "q1", "question": f"what is {topic}", "origin": "planner"}]
+
+    def fake_search(query):
+        calls["search"] += 1
+        return [{"url": "u", "title": "t", "published_date": None, "raw_content": query}]
+
+    monkeypatch.setattr(planner, "make_plan", fake_plan)
+    monkeypatch.setattr(search, "search_sources", fake_search)
     monkeypatch.setattr(harness, "CACHE_PATH", tmp_path / "cache.json")
-    monkeypatch.setattr(harness, "research_cache", {"cached topic": ["cached note"]})
+    monkeypatch.setattr(harness, "research_cache", {"plans": {}, "searches": {}})
+    harness.enable_research_cache()
 
-    harness.run_pipeline({"topic": "cached topic"})
-    harness.run_pipeline({"topic": "new topic"})
+    for _ in range(2):
+        timeframe, sub_questions = planner.make_plan("mcp")
+        assert search.search_sources(sub_questions[0]["question"])[0]["raw_content"] == "what is mcp"
 
-    assert seen[0]["research_notes"] == ["cached note"]
-    assert seen[0]["validation_status"] == "VALIDATED"
-    assert seen[1]["research_notes"] == []
-    assert json.loads((tmp_path / "cache.json").read_text())["new topic"] == ["fresh"]
+    assert calls == {"plan": 1, "search": 1}
+    saved = json.loads((tmp_path / "cache.json").read_text())
+    assert "mcp" in saved["plans"] and "what is mcp" in saved["searches"]
 
 
 def test_summary_averages_scores_and_ignores_unscored():
@@ -233,3 +241,17 @@ def test_summary_averages_scores_and_ignores_unscored():
     summary = harness.summarise(rows)
 
     assert summary == {"tone": 0.5, "correctness": 0.5, "seconds_per_post": 150}
+
+
+def test_pipeline_outputs_carry_run_time_and_draft_words(monkeypatch):
+    """Spec 0003 AC-8: wall time of one invocation, and words of the draft with tags removed."""
+    class FakeGraph:
+        def invoke(self, state):
+            return {**state, "draft": "<h2>Title here</h2><p>four more plain words</p>"}
+
+    monkeypatch.setattr(harness, "eval_graph", FakeGraph())
+
+    outputs = harness.run_pipeline({"topic": "MCP"})
+
+    assert outputs["draft_words"] == 6
+    assert isinstance(outputs["total_seconds"], float) and outputs["total_seconds"] >= 0

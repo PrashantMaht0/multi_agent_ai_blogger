@@ -13,6 +13,11 @@ _PREAMBLE_PATTERN = re.compile(r"^[^<]*?(?=<\s*[a-zA-Z])", re.DOTALL)
 _TRAILING_FENCE_PATTERN = re.compile(r"```\s*$")
 MAX_TITLE_LENGTH = 150
 
+_FIGURE_PATTERN = re.compile(r"\d[\d,]*(?:\.\d+)?%?")
+_CODE_BLOCK_PATTERN = re.compile(r"<(code|pre)\b[^>]*>.*?</\1\s*>", re.IGNORECASE | re.DOTALL)
+_URL_PATTERN = re.compile(r"https?://\S+")
+_ANY_TAG_PATTERN = re.compile(r"<[^>]+>")
+
 
 def sanitize_html(draft: str) -> tuple[str, list[str]]:
     """Returns the cleaned draft and a list of what was removed."""
@@ -39,6 +44,28 @@ def sanitize_html(draft: str) -> tuple[str, list[str]]:
         removed.append("attributes or malformed markup")
 
     return safe, removed
+
+
+def _figures(text: str) -> list[str]:
+    """Years, numbers of 10 or more, decimals and percentages; commas dropped, first seen order."""
+    found = []
+    for match in _FIGURE_PATTERN.findall(text):
+        figure = match.replace(",", "")
+        number = figure.rstrip("%")
+        if not number:
+            continue
+        if (len(number) == 4 and number.isdigit()) or "." in number or figure.endswith("%") or float(number) >= 10:
+            if figure not in found:
+                found.append(figure)
+    return found
+
+
+def unsupported_figures(draft_html: str, notes: list[str]) -> list[str]:
+    """Figures in the draft's text that no research note contains. Code and URLs are ignored."""
+    text = _CODE_BLOCK_PATTERN.sub(" ", draft_html or "")
+    text = html.unescape(_ANY_TAG_PATTERN.sub(" ", _URL_PATTERN.sub(" ", text)))
+    known = set(_figures(" ".join(notes)))
+    return [f for f in _figures(text) if f not in known]
 
 
 def clean_title(topic: str) -> str:

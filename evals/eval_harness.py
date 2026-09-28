@@ -1,18 +1,21 @@
-"""LangSmith evaluation: runs the pipeline over tests/dataset.json and scores each draft.
+"""LangSmith evaluation: runs the pipeline over evals/dataset.json and scores each draft.
 
-    python tests/eval_harness.py --limit 5     # 5 topics
-    python tests/eval_harness.py               # all 20
-    python tests/eval_harness.py --cache-research --repetitions 3 --writer-temperature 0.7
+    python evals/eval_harness.py --limit 5     # 5 topics
+    python evals/eval_harness.py               # all 20
+    python evals/eval_harness.py --cache-research --repetitions 3 --writer-temperature 0.7
 
-Each topic spends one web search credit and three Gemini judge calls.
+Each topic spends 5 to 11 web search credits (one per sub question) and three Gemini judge calls.
 """
 
 import argparse
 import dataclasses
 import json
 import os
+import re
 import statistics
 import sys
+import threading
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -21,16 +24,54 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from src.agents.parsing import judge_messages, message_text
+from src.common.parsing import judge_messages, message_text
 from src.orchestrator.graph import build_graph
+from src.state import initial_state
 
 DATASET_PATH = Path(__file__).parent / "dataset.json"
-CACHE_PATH = Path(__file__).parent / "research_cache.json"
+CACHE_PATH = Path(__file__).parent / "search_cache.json"
 DATASET_NAME = os.getenv("LANGSMITH_DATASET", "ai-blogger-eval")
 JUDGE_MODEL = os.getenv("EVAL_MODEL", "gemini-3.5-flash-lite")
 
 eval_graph = build_graph(enable_hitl=False, include_publisher=False, use_checkpointer=False)
-research_cache: dict[str, list[str]] | None = None
+# {"plans": {topic: [timeframe, sub_questions]}, "searches": {query: sources}}
+research_cache: dict | None = None
+_cache_lock = threading.Lock()
+
+
+def _save_cache():
+    CACHE_PATH.write_text(json.dumps(research_cache, indent=2))
+
+
+def enable_research_cache():
+    """Wraps the planner and the search step so a cached topic replays its plan and spends no credits."""
+    import src.agents.planner as planner
+    from src.tools import search
+
+    make_plan, search_sources = planner.make_plan, search.search_sources
+
+    def cached_plan(topic):
+        with _cache_lock:
+            hit = research_cache["plans"].get(topic)
+        if hit is None:
+            hit = list(make_plan(topic))
+            with _cache_lock:
+                research_cache["plans"][topic] = hit
+                _save_cache()
+        return hit[0], hit[1]
+
+    def cached_search(query):
+        with _cache_lock:
+            hit = research_cache["searches"].get(query)
+        if hit is None:
+            hit = search_sources(query)  # a failed search raises and is never cached
+            with _cache_lock:
+                research_cache["searches"][query] = hit
+                _save_cache()
+        return hit
+
+    planner.make_plan = cached_plan
+    search.search_sources = cached_search
 
 
 def _judge_llm():
@@ -98,35 +139,15 @@ def push_dataset_edits(client) -> int:
 
 
 def run_pipeline(inputs: dict) -> dict:
-    """One invocation: researcher -> validator -> writer -> editor -> sanitizer -> END."""
-    topic = inputs["topic"]
-    # Cached notes skip the search; the validator still re-checks them.
-    cached = research_cache.get(topic) if research_cache is not None else None
-    state = eval_graph.invoke({
-        "topic": topic,
-        "research_notes": cached or [],
-        "research_error": None,
-        "research_attempts": 0,
-        "raw_sources": [],
-        "validation_status": "VALIDATED" if cached else None,
-        "validation_feedback": None,
-        "run_status": None,
-        "sanitizer_removed": [],
-        "draft": "",
-        "title": "",
-        "approved_sha256": None,
-        "review_flag": None,
-        "feedback": "",
-        "last_evaluation": None,
-        "blogger_url": None,
-        "revision_count": 0,
-        "sender": "eval",
-    })
-    if research_cache is not None and not cached and state.get("validation_status") == "VALIDATED":
-        research_cache[topic] = state["research_notes"]
-        CACHE_PATH.write_text(json.dumps(research_cache, indent=2))
+    """One invocation: planner -> research branches -> auditor -> writer -> editor -> sanitizer -> END."""
+    started = time.monotonic()
+    state = eval_graph.invoke({**initial_state(inputs["topic"]), "sender": "eval"})
+    total_seconds = round(time.monotonic() - started, 1)
+    draft = state.get("draft", "")
     return {
-        "draft": state.get("draft", ""),
+        "draft": draft,
+        "total_seconds": total_seconds,
+        "draft_words": len(re.sub(r"<[^>]+>", " ", draft).split()),
         "research_notes": state.get("research_notes", []),
         "run_status": state.get("run_status"),
         "last_evaluation": state.get("last_evaluation"),
@@ -346,13 +367,13 @@ def summarise(results) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="Run the LangSmith evaluation sweep.")
     parser.add_argument("--limit", type=int, default=None,
-                        help="Evaluate only the first N examples (each costs one Tavily search).")
+                        help="Evaluate only the first N examples (each costs 5 to 11 Tavily searches).")
     parser.add_argument("--sync-dataset", action="store_true",
                         help="Push edited reference answers from dataset.json to LangSmith first.")
     parser.add_argument("--concurrency", type=int, default=1,
                         help="Parallel examples. Judges are hosted, but the pipeline runs on one local Ollama.")
     parser.add_argument("--cache-research", action="store_true",
-                        help="Reuse validated research notes from tests/research_cache.json; saves search credits.")
+                        help="Reuse each topic's plan and every search result from evals/search_cache.json; saves search credits.")
     parser.add_argument("--writer-temperature", type=float, default=None,
                         help="Override the writer's temperature for this sweep.")
     parser.add_argument("--repetitions", type=int, default=1,
@@ -361,8 +382,11 @@ def main():
 
     global research_cache
     if args.cache_research:
-        research_cache = json.loads(CACHE_PATH.read_text()) if CACHE_PATH.exists() else {}
-        print(f"Research cache: {len(research_cache)} topic(s) cached.")
+        research_cache = (json.loads(CACHE_PATH.read_text()) if CACHE_PATH.exists()
+                          else {"plans": {}, "searches": {}})
+        enable_research_cache()
+        print(f"Research cache: {len(research_cache['plans'])} topic(s), "
+              f"{len(research_cache['searches'])} search(es) cached.")
 
     import src.agents.writer as writer
     if args.writer_temperature is not None:
@@ -381,7 +405,7 @@ def main():
         push_dataset_edits(client)
 
     data = list(client.list_examples(dataset_name=DATASET_NAME, limit=args.limit))
-    print(f"Evaluating {len(data)} examples: {len(data)} web searches, "
+    print(f"Evaluating {len(data)} examples: 5 to 11 web searches each unless cached, "
           f"{len(data) * len(EVALUATORS)} judge calls on {JUDGE_MODEL}.")
 
     runs = []

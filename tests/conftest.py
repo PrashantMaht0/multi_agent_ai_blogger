@@ -11,7 +11,7 @@ dotenv.find_dotenv = lambda *args, **kwargs: ""
 # Placeholder keys, so no real credential reaches a test.
 os.environ.update({
     "TAVILY_API_KEY": "test-tavily-key",
-    "GEMINI_API_KEY": "test-gemini-key",  # the validator builds a client at import
+    "GEMINI_API_KEY": "test-gemini-key",  # the auditor and cross check build clients at import
     "BLOGGER_BLOG_ID": "test-blog-id",
     "WORKER_MODEL": "test-worker-model",
     "EDITOR_MODEL": "test-editor-model",

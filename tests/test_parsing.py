@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.agents.parsing import parse_verdict_lines
+from src.common.parsing import parse_verdict_lines
 
 VERDICTS = ("VALIDATED", "REJECTED")
 
@@ -60,9 +60,29 @@ def test_judge_messages_include_a_user_turn():
     """Judge prompts carry a user turn, which Gemini requires."""
     from langchain_core.messages import HumanMessage, SystemMessage
 
-    from src.agents.parsing import judge_messages
+    from src.common.parsing import judge_messages
 
     messages = judge_messages("grade this")
 
     assert isinstance(messages[0], SystemMessage)
     assert any(isinstance(m, HumanMessage) for m in messages), "Gemini needs a user turn"
+
+
+# strip_json_fence: hosted models wrap JSON in a markdown fence even when told not to.
+
+from src.common.parsing import strip_json_fence
+
+
+@pytest.mark.parametrize("raw", [
+    '```json\n{"a": 1}\n```',
+    '```\n{"a": 1}\n```',
+    '  ```json {"a": 1} ```  ',
+    '{"a": 1}',
+])
+def test_fence_is_removed_and_bare_json_is_left_alone(raw):
+    assert strip_json_fence(raw) == '{"a": 1}'
+
+
+def test_text_that_only_mentions_a_fence_is_unchanged():
+    raw = 'Here you go: ```json {"a": 1}``` hope it helps'
+    assert strip_json_fence(raw) == raw

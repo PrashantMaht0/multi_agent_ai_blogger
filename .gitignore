@@ -1,23 +1,30 @@
-
+# Secrets: never committed
 .env
 credentials.json
 token.json
 
-temp.txt
-
-poetry.toml
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
+.pytest_cache/
 
-.venv/
+# Local environments and tool settings
 dev-env/
+.venv/
 venv/
 env/
-
-.vscode
+poetry.toml
+.vscode/
+.claude/
 claude.md
-.claude
-error_runs.jsonl
-poetry.lock
-tests/research_cache.json
+test-preferences.json
+
+# OS files
+.DS_Store
+
+# Private design notes (specs, scope, verify checklists)
+docs/
+
+# Evaluation caches: replayed searches and plans, regenerated locally
+evals/search_cache.json
+evals/research_cache.json

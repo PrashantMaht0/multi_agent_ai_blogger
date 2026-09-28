@@ -31,6 +31,8 @@ class Prompt:
     temperature: float = 0.0
     format: str | None = None
     num_predict: int | None = None
+    # Ollama's default context silently cuts longer prompts; set it wherever a prompt is long.
+    num_ctx: int | None = None
     reasoning: bool | None = None
     repeat_penalty: float | None = None
     description: str = ""
@@ -53,6 +55,7 @@ class Prompt:
             "temperature": self.temperature,
             "base_url": os.getenv("OLLAMA_BASE_URL"),
             "num_predict": self.num_predict,
+            "num_ctx": self.num_ctx,
             "reasoning": self.reasoning,
             "repeat_penalty": self.repeat_penalty,
         }
@@ -92,6 +95,7 @@ def load_prompt(name: str) -> Prompt:
         temperature=data.get("temperature", 0.0),
         format=data.get("format"),
         num_predict=data.get("num_predict"),
+        num_ctx=data.get("num_ctx"),
         reasoning=data.get("reasoning"),
         repeat_penalty=data.get("repeat_penalty"),
         description=data.get("description", ""),

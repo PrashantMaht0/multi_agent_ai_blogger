@@ -1,6 +1,6 @@
 """Agent that judges how the draft reads and loops it back to the writer."""
 
-from src.agents.parsing import judge_messages, judge_text, parse_verdict_lines
+from src.common.parsing import judge_messages, judge_text, parse_verdict_lines
 from src.prompts import load_prompt
 from src.state import AgentState
 
@@ -10,7 +10,7 @@ MAX_REVISIONS = 3
 editor_llm = prompt_spec.llm()
 
 def editor_node(state: AgentState) -> dict:
-    # No research notes: the validator owns fact-checking, this node judges writing.
+    # No research notes: the auditor owns fact-checking, this node judges writing.
     prompt = prompt_spec.render(topic=state["topic"], draft=state["draft"])
 
     raw = judge_text(editor_llm, judge_messages(prompt))

@@ -1,7 +1,7 @@
 """Publishes src/prompts/*.yaml to the LangSmith Prompt Hub, stamped with the git commit.
 
-    python tests/push_prompts.py            # push all four
-    python tests/push_prompts.py writer     # push one
+    python evals/push_prompts.py            # push every prompt
+    python evals/push_prompts.py writer     # push one
 """
 
 import argparse
@@ -19,7 +19,7 @@ load_dotenv()
 
 from src.prompts import PROMPTS_DIR, load_prompt
 
-AGENTS = ["researcher", "validator", "writer", "editor"]
+AGENTS = ["planner", "researcher", "auditor", "cross_check", "writer", "editor"]
 
 
 def git_commit() -> str:
